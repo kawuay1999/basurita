@@ -1,0 +1,54 @@
+<div class="min-h-screen bg-basurita-bg flex flex-col justify-center px-6 py-12">
+  <div class="sm:mx-auto sm:w-full sm:max-w-md flex flex-col items-center">
+    <!-- Regla #1: Uso de Logo oficial de Basurita en SVG/PNG -->
+    <img class="h-20 w-auto mb-6" src="logo copy.ico" alt="Basurita Logo">
+    
+    <h2 class="text-center text-3xl font-bold tracking-tight text-basurita-text">
+      Bienvenido de nuevo
+    </h2>
+    <p class="mt-2 text-center text-sm text-basurita-muted">
+      Tu basura a tiempo, tu ciudad limpia y conectada.
+    </p>
+  </div>
+
+  <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+    <div class="bg-basurita-surface py-8 px-6 shadow-soft rounded-softer sm:px-10 border border-gray-100">
+      
+      <!-- Alerta de error amigable -->
+      <div *ngIf="errorMessage" class="mb-4 bg-red-50 p-4 rounded-soft flex items-center gap-3">
+        <svg class="w-5 h-5 text-basurita-danger" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <p class="text-sm text-basurita-danger-dark font-medium">{{ errorMessage }}</p>
+      </div>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-6">
+        <div>
+          <label for="email" class="block text-sm font-medium text-basurita-text">Correo electrónico</label>
+          <div class="mt-1">
+            <!-- Usa la clase base .input-base del Design System -->
+            <input id="email" type="email" formControlName="email" class="input-base" placeholder="ejemplo@correo.com">
+          </div>
+        </div>
+
+        <div>
+          <label for="password" class="block text-sm font-medium text-basurita-text">Contraseña</label>
+          <div class="mt-1">
+            <input id="password" type="password" formControlName="password" class="input-base" placeholder="••••••••">
+          </div>
+        </div>
+
+        <div>
+          <app-button type="submit" variant="primary" size="normal" [fullWidth]="true" [loading]="isLoading">
+            Iniciar Sesión
+          </app-button>
+        </div>
+      </form>
+
+      <div class="mt-6 text-center">
+        <p class="text-sm text-basurita-muted">
+          ¿No tienes cuenta? 
+          <a routerLink="/auth/register" class="font-semibold text-basurita-primary hover:text-basurita-primary-dark transition-colors">Regístrate aquí</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

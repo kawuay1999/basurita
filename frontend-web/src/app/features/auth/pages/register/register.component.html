@@ -1,0 +1,66 @@
+<div class="min-h-screen bg-basurita-bg flex flex-col justify-center py-12 px-6">
+  <div class="sm:mx-auto sm:w-full sm:max-w-md flex flex-col items-center">
+    <img class="h-16 w-auto mb-4" src="logo copy.ico" alt="Basurita Logo">
+    <h2 class="text-center text-3xl font-bold tracking-tight text-basurita-text">
+      Crea tu cuenta
+    </h2>
+    <p class="mt-2 text-center text-sm text-basurita-muted">
+      Únete para rastrear tu ruta de recolección
+    </p>
+  </div>
+
+  <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+    <div class="bg-basurita-surface py-8 px-6 shadow-soft rounded-softer sm:px-10 border border-gray-100">
+      
+      <div *ngIf="errorMessage" class="mb-4 bg-red-50 p-4 rounded-soft flex items-center gap-3">
+        <svg class="w-5 h-5 text-basurita-danger" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <p class="text-sm text-basurita-danger-dark font-medium">{{ errorMessage }}</p>
+      </div>
+
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-5">
+        <div>
+          <label for="name" class="block text-sm font-medium text-basurita-text">Nombre completo</label>
+          <input id="name" type="text" formControlName="name" class="input-base mt-1" placeholder="Juan Pérez">
+        </div>
+
+        <div>
+          <label for="email" class="block text-sm font-medium text-basurita-text">Correo electrónico</label>
+          <input id="email" type="email" formControlName="email" class="input-base mt-1" placeholder="juan@correo.com">
+        </div>
+
+        <div>
+          <label for="phone" class="block text-sm font-medium text-basurita-text">Teléfono (10 dígitos)</label>
+          <input id="phone" type="tel" formControlName="phone" class="input-base mt-1" placeholder="5512345678">
+        </div>
+
+        <div>
+          <label for="colonia_id" class="block text-sm font-medium text-basurita-text">Tu Colonia</label>
+          <select id="colonia_id" formControlName="colonia_id" class="input-base mt-1">
+            <option value="" disabled selected>Selecciona tu colonia</option>
+            <option *ngFor="let colonia of colonias" [value]="colonia.id">
+              {{ colonia.nombre }}
+            </option>
+          </select>
+        </div>
+
+        <div>
+          <label for="password" class="block text-sm font-medium text-basurita-text">Contraseña</label>
+          <input id="password" type="password" formControlName="password" class="input-base mt-1" placeholder="Mínimo 8 caracteres">
+        </div>
+
+        <div class="pt-2">
+          <app-button type="submit" variant="primary" size="normal" [fullWidth]="true" [loading]="isLoading">
+            Crear cuenta
+          </app-button>
+        </div>
+      </form>
+
+      <div class="mt-6 text-center">
+        <p class="text-sm text-basurita-muted">
+          ¿Ya tienes cuenta? 
+          <a routerLink="/auth/login" class="font-semibold text-basurita-primary hover:text-basurita-primary-dark transition-colors">Inicia sesión</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

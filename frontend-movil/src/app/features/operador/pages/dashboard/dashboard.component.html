@@ -1,0 +1,78 @@
+<div class="min-h-screen bg-basurita-bg flex flex-col p-6">
+  
+  <!-- Header Minimalista sin emojis y con contraste WCAG AA -->
+  <header class="mb-6 flex justify-between items-center">
+    <div>
+      <h1 class="text-3xl font-black text-basurita-text uppercase tracking-tight">{{ operadorNombre }}</h1>
+      <div class="flex items-center gap-2 mt-1">
+        <span [ngClass]="enRuta ? 'bg-red-600 animate-pulse' : 'bg-gray-600'" 
+              class="w-3 h-3 rounded-full inline-block"></span>
+        <p class="text-gray-700 font-bold text-base">
+          {{ enRuta ? 'En servicio activo' : 'Fuera de servicio' }}
+        </p>
+      </div>
+    </div>
+    
+    <!-- Indicador Offline con contraste WCAG AA -->
+    <div *ngIf="colaPendiente > 0" 
+         role="status"
+         class="flex flex-col items-center bg-amber-100 px-3 py-2 rounded-soft border border-amber-400">
+      <svg class="w-6 h-6 text-amber-900 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path>
+      </svg>
+      <span class="text-xs font-extrabold text-amber-950">{{ colaPendiente }} pend.</span>
+    </div>
+  </header>
+
+  <!-- Alerta dinámica flotante -->
+  <div *ngIf="mensajeAlerta" 
+       role="alert"
+       class="mb-6 bg-basurita-text text-white p-4 rounded-soft text-center font-bold shadow-soft transition-all">
+    {{ mensajeAlerta }}
+  </div>
+
+  <!-- Botón Masivo Principal (>= 64x64dp garantizado - RNF-21) -->
+  <div class="flex-1 flex flex-col justify-center mb-6">
+    <button (click)="toggleRuta()" 
+            [attr.aria-label]="enRuta ? 'Terminar ruta actual' : 'Iniciar ruta de recolección'"
+            [ngClass]="enRuta ? 'bg-red-700 hover:bg-red-800 border-red-950' : 'bg-basurita-primary-dark hover:bg-blue-800 border-blue-950'"
+            class="w-full min-h-160px min-w-64px rounded-2rem shadow-floating transform active:scale-95 transition-all flex flex-col items-center justify-center border-b-10px p-6">
+      
+      <svg *ngIf="!enRuta" class="w-16 h-16 text-white mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      <svg *ngIf="enRuta" class="w-16 h-16 text-white mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"></path>
+      </svg>
+
+      <span class="text-3xl font-black text-white uppercase tracking-widest">
+        {{ enRuta ? 'Terminar Ruta' : 'Iniciar Ruta' }}
+      </span>
+    </button>
+  </div>
+
+  <!-- Panel de Incidencias (>= 64x64dp cada botón y contraste WCAG AA) -->
+  <div *ngIf="enRuta" class="grid grid-cols-3 gap-4">
+    <button *ngFor="let inc of incidencias" 
+            (click)="reportar(inc.id)"
+            [attr.aria-label]="'Reportar ' + inc.nombre"
+            [ngClass]="inc.color"
+            class="min-h-112px min-w-64px rounded-soft shadow-md text-white flex flex-col items-center justify-center p-3 transform active:scale-90 transition-transform">
+      
+      <svg *ngIf="inc.id === 'calle_cerrada'" class="w-9 h-9 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+      </svg>
+      <svg *ngIf="inc.id === 'falla_mecanica'" class="w-9 h-9 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+      </svg>
+      <svg *ngIf="inc.id === 'accidente'" class="w-9 h-9 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+
+      <span class="text-sm font-extrabold leading-tight text-center">{{ inc.nombre }}</span>
+    </button>
+  </div>
+</div>
