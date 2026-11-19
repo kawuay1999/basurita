@@ -30,7 +30,7 @@ class UbicacionService
             'latitud' => $data['lat'],
             'longitud' => $data['lng'],
             'precision_metros' => $data['accuracy'] ?? null,
-            'fecha_hora_dispositivo' => Carbon::parse($data['timestamp'])->setTimezone('UTC'),
+            'fecha_hora_dispositivo' => Carbon::parse($data['timestamp'])->setTimezone(config('app.timezone')),
         ]);
 
         // *Nota: En el Módulo 11 (Notificaciones) aquí despacharemos un Job para revisar

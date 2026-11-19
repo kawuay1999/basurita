@@ -15,6 +15,7 @@ export class LoginComponent {
   loginForm: FormGroup;
   isLoading = false;
   errorMessage = '';
+  showPassword = false; // Ojito para mostrar/ocultar contraseña
 
   constructor(
     private fb: FormBuilder,
@@ -37,14 +38,8 @@ export class LoginComponent {
       next: (res: any) => {
         // Usamos tus métodos personalizados
         this.authService.saveSession(res.token, res.user);
-        const role = this.authService.getUserRole();
-        
-        // Ruteo basado en RBAC
-        if (role === 'operador') {
-          this.router.navigate(['/operador/dashboard']);
-        } else {
-          this.router.navigate(['/ciudadano/mapa']);
-        }
+        // Primero el permiso de ubicación; esa pantalla manda a cada rol a su inicio
+        this.router.navigate(['/permiso-ubicacion']);
       },
       error: () => {
         this.isLoading = false;

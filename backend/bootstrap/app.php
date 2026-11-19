@@ -16,7 +16,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        //
+        // Alias usado en routes/api.php: ->middleware('role:administrador')
+        $middleware->alias([
+            'role' => \App\Http\Middleware\CheckRole::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         // Interceptar errores en rutas API para devolver JSON amigable
@@ -25,7 +28,8 @@ return Application::configure(basePath: dirname(__DIR__))
                 if ($e instanceof ValidationException) {
                     return response()->json([
                         'exito' => false,
-                        'mensaje' => 'Verifica los datos ingresados e intenta de nuevo.',
+                        // Muestra el primer error concreto (ej. "Ese correo ya está registrado.")
+                        'mensaje' => collect($e->errors())->flatten()->first() ?? 'Verifica los datos ingresados e intenta de nuevo.',
                         'errores' => $e->errors()
                     ], 422);
                 }

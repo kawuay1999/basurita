@@ -14,12 +14,11 @@ export const roleGuard: CanActivateFn = (route, state) => {
   }
 
   // Redirección inteligente si no tiene permisos
-  if (userRole === 'administrador') {
-    router.navigate(['/admin']);
-  } else if (userRole === 'operador') {
-    router.navigate(['/operador']);
-  } else if (userRole === 'ciudadano') {
-    router.navigate(['/ciudadano']);
+  // (en la app móvil solo existen las pantallas de operador y ciudadano)
+  if (userRole === 'operador') {
+    router.navigate(['/operador/dashboard']);
+  } else if (userRole === 'ciudadano' || userRole === 'administrador') {
+    router.navigate(['/ciudadano/mapa']);
   } else {
     router.navigate(['/auth/login']);
   }

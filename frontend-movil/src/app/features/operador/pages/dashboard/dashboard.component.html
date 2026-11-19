@@ -1,78 +1,238 @@
-<div class="min-h-screen bg-basurita-bg flex flex-col p-6">
-  
-  <!-- Header Minimalista sin emojis y con contraste WCAG AA -->
-  <header class="mb-6 flex justify-between items-center">
-    <div>
-      <h1 class="text-3xl font-black text-basurita-text uppercase tracking-tight">{{ operadorNombre }}</h1>
-      <div class="flex items-center gap-2 mt-1">
-        <span [ngClass]="enRuta ? 'bg-red-600 animate-pulse' : 'bg-gray-600'" 
-              class="w-3 h-3 rounded-full inline-block"></span>
-        <p class="text-gray-700 font-bold text-base">
-          {{ enRuta ? 'En servicio activo' : 'Fuera de servicio' }}
-        </p>
+<div class="relative h-dvh w-screen overflow-hidden bg-basurita-bg">
+
+  <!-- Mapa a pantalla completa -->
+  <div id="mapa-operador" class="absolute inset-0 z-0"></div>
+
+  <!-- ===== Parte de arriba ===== -->
+  <div class="absolute top-0 left-0 right-0 z-[1000] p-4 space-y-3 pointer-events-none">
+
+    <!-- Fuera de ruta: saludo como en la app del ciudadano -->
+    <div *ngIf="!enRuta" class="bg-white/95 backdrop-blur-md shadow-floating rounded-full p-2 flex items-center gap-3 pointer-events-auto border border-gray-200">
+      <button (click)="menuAbierto = true" aria-label="Abrir menú de perfil"
+              class="w-11 h-11 shrink-0 rounded-full bg-basurita-primary text-white font-black text-lg flex items-center justify-center shadow-md active:scale-95 transition">
+        {{ inicial }}
+      </button>
+      <div class="flex-1 min-w-0">
+        <p class="text-xs text-basurita-muted leading-tight">Hola, conductor</p>
+        <p class="font-bold text-basurita-text truncate leading-tight">{{ primerNombre }}</p>
+      </div>
+      <span class="shrink-0 mr-2 flex items-center gap-1.5 text-xs font-bold text-basurita-muted">
+        <span class="w-2.5 h-2.5 rounded-full bg-gray-400"></span> Fuera de servicio
+      </span>
+    </div>
+
+    <!-- En ruta: tarjeta de navegación (como DiDi / Uber) -->
+    <div *ngIf="enRuta" class="bg-basurita-primary-dark text-white shadow-floating rounded-softer p-3 flex items-center gap-3 pointer-events-auto">
+      <button (click)="menuAbierto = true" aria-label="Abrir menú de perfil"
+              class="w-11 h-11 shrink-0 rounded-full bg-white/15 font-black text-lg flex items-center justify-center active:scale-95">
+        {{ inicial }}
+      </button>
+      <div class="flex-1 min-w-0">
+        <p class="text-[11px] uppercase tracking-wider text-green-100 font-bold">Vas por</p>
+        <p class="text-lg font-black leading-tight truncate">{{ calleActual || 'Buscando tu calle...' }}</p>
+        <p class="text-xs text-green-100 truncate">{{ zonaActual || 'Sigue la línea verde del mapa' }}</p>
+      </div>
+      <div class="shrink-0 flex flex-col items-center px-1">
+        <span class="w-2.5 h-2.5 rounded-full bg-red-400 animate-pulse"></span>
+        <span class="text-[10px] font-bold mt-1">EN VIVO</span>
       </div>
     </div>
-    
-    <!-- Indicador Offline con contraste WCAG AA -->
-    <div *ngIf="colaPendiente > 0" 
-         role="status"
-         class="flex flex-col items-center bg-amber-100 px-3 py-2 rounded-soft border border-amber-400">
-      <svg class="w-6 h-6 text-amber-900 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path>
-      </svg>
-      <span class="text-xs font-extrabold text-amber-950">{{ colaPendiente }} pend.</span>
-    </div>
-  </header>
 
-  <!-- Alerta dinámica flotante -->
-  <div *ngIf="mensajeAlerta" 
-       role="alert"
-       class="mb-6 bg-basurita-text text-white p-4 rounded-soft text-center font-bold shadow-soft transition-all">
-    {{ mensajeAlerta }}
-  </div>
-
-  <!-- Botón Masivo Principal (>= 64x64dp garantizado - RNF-21) -->
-  <div class="flex-1 flex flex-col justify-center mb-6">
-    <button (click)="toggleRuta()" 
-            [attr.aria-label]="enRuta ? 'Terminar ruta actual' : 'Iniciar ruta de recolección'"
-            [ngClass]="enRuta ? 'bg-red-700 hover:bg-red-800 border-red-950' : 'bg-basurita-primary-dark hover:bg-blue-800 border-blue-950'"
-            class="w-full min-h-160px min-w-64px rounded-2rem shadow-floating transform active:scale-95 transition-all flex flex-col items-center justify-center border-b-10px p-6">
-      
-      <svg *ngIf="!enRuta" class="w-16 h-16 text-white mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
-        <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-      </svg>
-      <svg *ngIf="enRuta" class="w-16 h-16 text-white mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-        <path stroke-linecap="round" stroke-linejoin="round" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z"></path>
-      </svg>
-
-      <span class="text-3xl font-black text-white uppercase tracking-widest">
-        {{ enRuta ? 'Terminar Ruta' : 'Iniciar Ruta' }}
+    <!-- Estado del GPS y pendientes sin conexión -->
+    <div class="flex flex-wrap gap-2 pointer-events-auto">
+      <span *ngIf="estadoGps === 'buscando'" class="bg-white/95 shadow px-3 py-1.5 rounded-full text-xs font-bold text-amber-800 flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span> Buscando señal GPS...
       </span>
+      <span *ngIf="estadoGps === 'sin_permiso' && !simulando" class="bg-white/95 shadow px-3 py-1.5 rounded-full text-xs font-bold text-red-700 flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-red-600"></span> Ubicación bloqueada
+      </span>
+      <span *ngIf="colaPendiente > 0" role="status" class="bg-amber-100 border border-amber-400 shadow px-3 py-1.5 rounded-full text-xs font-bold text-amber-950">
+        Sin señal · {{ colaPendiente }} por enviar
+      </span>
+      <span *ngIf="simulando" class="bg-purple-700 text-white shadow px-3 py-1.5 rounded-full text-xs font-bold">Modo prueba: simulando</span>
+    </div>
+
+    <!-- Mensajes (avisos enviados, errores) -->
+    <div *ngIf="mensaje" role="status"
+         class="pointer-events-auto text-white text-sm font-bold px-4 py-3 rounded-soft shadow-floating"
+         [ngClass]="mensajeError ? 'bg-red-700' : 'bg-basurita-text'">
+      {{ mensaje }}
+    </div>
+  </div>
+
+  <!-- Botón centrar -->
+  <button *ngIf="!siguiendo || !enRuta" (click)="recentrar()" aria-label="Centrar el mapa en el camión"
+          class="absolute right-4 z-[1000] w-12 h-12 rounded-full bg-white shadow-floating flex items-center justify-center text-basurita-primary active:scale-95"
+          [ngClass]="enRuta ? 'bottom-60' : 'bottom-72'">
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path stroke-linecap="round" d="M12 2v3m0 14v3M2 12h3m14 0h3"/><circle cx="12" cy="12" r="7"/></svg>
+  </button>
+
+  <!-- ===== Hoja inferior ===== -->
+  <div class="absolute bottom-0 left-0 right-0 z-[1000] bg-white rounded-t-[1.75rem] shadow-[0_-8px_30px_rgba(0,0,0,0.12)] px-5 pt-3 pb-6">
+    <div class="w-10 h-1.5 rounded-full bg-gray-300 mx-auto mb-4" aria-hidden="true"></div>
+
+    <!-- Cargando -->
+    <p *ngIf="cargando" class="text-basurita-muted font-semibold py-6 text-center">Consultando tu ruta de hoy...</p>
+
+    <!-- Sin ruta -->
+    <div *ngIf="!cargando && !jornadaId" class="text-center py-2">
+      <p class="text-lg font-black text-basurita-text">Hoy no tienes ruta asignada</p>
+      <p class="text-sm text-basurita-muted mt-1">El administrador asigna los recorridos desde el panel web.</p>
+      <button (click)="cargarJornada()" class="mt-4 w-full py-3.5 rounded-soft border-2 border-basurita-primary text-basurita-primary font-bold active:scale-[0.98]">
+        Volver a consultar
+      </button>
+    </div>
+
+    <!-- Ruta asignada, aún sin iniciar -->
+    <div *ngIf="!cargando && jornadaId && !enRuta">
+      <p class="text-xs font-bold uppercase text-basurita-muted tracking-wide">Tu ruta de hoy</p>
+      <p class="text-xl font-black text-basurita-text leading-tight">{{ rutaNombre }}</p>
+
+      <div class="flex flex-wrap gap-2 mt-3">
+        <span *ngIf="camionNumero" class="px-3 py-1 rounded-full bg-gray-100 text-sm font-semibold text-basurita-text">Camión {{ camionNumero }}</span>
+        <span *ngIf="kmTotales" class="px-3 py-1 rounded-full bg-gray-100 text-sm font-semibold text-basurita-text">{{ kmTotales }} km</span>
+        <span *ngFor="let c of colonias" class="px-3 py-1 rounded-full bg-green-50 text-sm font-semibold text-basurita-primary-dark">{{ c }}</span>
+      </div>
+
+      <p *ngIf="recorrido.length < 2" class="mt-3 text-xs text-amber-800 bg-amber-50 rounded-soft p-2">
+        Esta ruta aún no tiene recorrido dibujado. Se mostrará solo tu posición.
+      </p>
+
+      <button (click)="iniciarRuta()" [disabled]="procesando"
+              class="mt-5 w-full h-16 rounded-softer bg-basurita-primary text-white text-xl font-black uppercase tracking-wider shadow-floating flex items-center justify-center gap-3 active:scale-[0.98] transition disabled:opacity-60">
+        <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5.14v13.72a1 1 0 0 0 1.52.85l10.6-6.86a1 1 0 0 0 0-1.7L9.52 4.29A1 1 0 0 0 8 5.14Z"/></svg>
+        {{ procesando ? 'Iniciando...' : 'Iniciar ruta' }}
+      </button>
+    </div>
+
+    <!-- En ruta -->
+    <div *ngIf="!cargando && jornadaId && enRuta">
+      <div class="flex items-end justify-between">
+        <div class="min-w-0">
+          <p class="text-xs font-bold uppercase text-basurita-muted tracking-wide truncate">{{ rutaNombre }}</p>
+          <p class="text-2xl font-black text-basurita-text">{{ porcentaje }}% <span class="text-base font-bold text-basurita-muted">recorrido</span></p>
+        </div>
+        <p *ngIf="kmTotales" class="text-sm font-bold text-basurita-muted shrink-0">Faltan {{ kmRestantes }} km</p>
+      </div>
+      <div class="h-2.5 rounded-full bg-gray-200 mt-2 overflow-hidden" role="progressbar" [attr.aria-valuenow]="porcentaje" aria-valuemin="0" aria-valuemax="100">
+        <div class="h-full bg-basurita-primary rounded-full transition-all duration-700" [style.width.%]="porcentaje"></div>
+      </div>
+
+      <div class="grid grid-cols-3 gap-3 mt-5">
+        <button (click)="hoja = 'avisos'" class="flex flex-col items-center justify-center gap-1.5 h-24 rounded-softer bg-green-50 text-basurita-primary-dark font-bold text-sm active:scale-95 transition">
+          <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.34 15.84c-.688-.06-1.386-.09-2.09-.09H7.5a4.5 4.5 0 1 1 0-9h.75c.704 0 1.402-.03 2.09-.09m0 9.18c.253.962.584 1.892.985 2.783.247.55.06 1.21-.463 1.511l-.657.38c-.551.318-1.26.117-1.527-.461a20.845 20.845 0 0 1-1.44-4.282m3.102.069a18.03 18.03 0 0 1-.59-4.59c0-1.586.205-3.124.59-4.59m0 9.18a23.848 23.848 0 0 1 8.835 2.535M10.34 6.66a23.847 23.847 0 0 0 8.835-2.535m0 0A23.74 23.74 0 0 0 18.795 3m.38 1.125a23.91 23.91 0 0 1 1.014 5.395m-1.014 8.855c-.118.38-.245.754-.38 1.125m.38-1.125a23.91 23.91 0 0 0 1.014-5.395m0-3.46c.495.413.811 1.035.811 1.73 0 .695-.316 1.317-.811 1.73m0-3.46a24.347 24.347 0 0 1 0 3.46"/></svg>
+          Avisar vecinos
+        </button>
+        <button (click)="hoja = 'reportar'" class="flex flex-col items-center justify-center gap-1.5 h-24 rounded-softer bg-amber-50 text-amber-800 font-bold text-sm active:scale-95 transition">
+          <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"/></svg>
+          Reportar
+        </button>
+        <button (click)="hoja = 'terminar'" class="flex flex-col items-center justify-center gap-1.5 h-24 rounded-softer bg-red-50 text-red-700 font-bold text-sm active:scale-95 transition">
+          <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+          Terminar
+        </button>
+      </div>
+    </div>
+
+    <!-- Solo en desarrollo: probar el recorrido sin salir a la calle -->
+    <button *ngIf="modoPrueba && enRuta && recorrido.length > 1" (click)="simularRecorrido()"
+            class="mt-4 w-full text-xs font-bold text-purple-700 underline">
+      {{ simulando ? 'Detener simulación' : 'Modo prueba: simular el recorrido' }}
     </button>
   </div>
 
-  <!-- Panel de Incidencias (>= 64x64dp cada botón y contraste WCAG AA) -->
-  <div *ngIf="enRuta" class="grid grid-cols-3 gap-4">
-    <button *ngFor="let inc of incidencias" 
-            (click)="reportar(inc.id)"
-            [attr.aria-label]="'Reportar ' + inc.nombre"
-            [ngClass]="inc.color"
-            class="min-h-112px min-w-64px rounded-soft shadow-md text-white flex flex-col items-center justify-center p-3 transform active:scale-90 transition-transform">
-      
-      <svg *ngIf="inc.id === 'calle_cerrada'" class="w-9 h-9 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-      </svg>
-      <svg *ngIf="inc.id === 'falla_mecanica'" class="w-9 h-9 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-      </svg>
-      <svg *ngIf="inc.id === 'accidente'" class="w-9 h-9 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-      </svg>
+  <!-- ===== Hojas emergentes ===== -->
+  <div *ngIf="hoja" class="absolute inset-0 z-[1800]">
+    <div class="absolute inset-0 bg-black/40" (click)="hoja = null" aria-hidden="true"></div>
 
-      <span class="text-sm font-extrabold leading-tight text-center">{{ inc.nombre }}</span>
-    </button>
+    <div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-[1.75rem] px-5 pt-3 pb-6 animate-[subir_.2s_ease-out]" role="dialog" aria-modal="true">
+      <div class="w-10 h-1.5 rounded-full bg-gray-300 mx-auto mb-4" aria-hidden="true"></div>
+
+      <!-- Avisos a vecinos -->
+      <ng-container *ngIf="hoja === 'avisos'">
+        <p class="text-lg font-black text-basurita-text">Avisar a los vecinos</p>
+        <p class="text-sm text-basurita-muted mb-4">Les llega a quienes viven sobre tu ruta.</p>
+        <div class="space-y-2">
+          <button *ngFor="let a of avisos" (click)="avisarVecinos(a.tipo)" [disabled]="procesando"
+                  class="w-full flex items-center gap-4 p-4 rounded-soft border border-gray-200 text-left active:bg-gray-50 disabled:opacity-60">
+            <span class="w-11 h-11 rounded-full flex items-center justify-center shrink-0"
+                  [ngClass]="a.tipo === 'no_pasara' ? 'bg-red-50 text-red-700' : (a.tipo === 'retraso' ? 'bg-amber-50 text-amber-700' : 'bg-green-50 text-basurita-primary')">
+              <svg *ngIf="a.icono === 'camion'" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 17h4V5H2v12h3"/><path d="M20 17h2v-3.34a4 4 0 0 0-1.17-2.83L19 9h-5v8h2"/><circle cx="7.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+              <svg *ngIf="a.icono === 'ruta'" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z"/></svg>
+              <svg *ngIf="a.icono === 'reloj'" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" d="M12 7v5l3 2"/></svg>
+              <svg *ngIf="a.icono === 'alto'" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" d="m5.6 5.6 12.8 12.8"/></svg>
+            </span>
+            <span class="flex-1 min-w-0">
+              <span class="block font-bold text-basurita-text">{{ a.titulo }}</span>
+              <span class="block text-xs text-basurita-muted">{{ a.detalle }}</span>
+            </span>
+          </button>
+        </div>
+      </ng-container>
+
+      <!-- Reportar incidencia -->
+      <ng-container *ngIf="hoja === 'reportar'">
+        <p class="text-lg font-black text-basurita-text">¿Qué pasó?</p>
+        <p class="text-sm text-basurita-muted mb-4">El administrador lo verá al momento.</p>
+        <div class="grid grid-cols-3 gap-3">
+          <button *ngFor="let inc of incidencias" (click)="reportar(inc.id, inc.nombre)" [ngClass]="inc.color"
+                  class="h-24 rounded-softer text-white font-bold text-sm flex items-center justify-center text-center p-2 active:scale-95 transition">
+            {{ inc.nombre }}
+          </button>
+        </div>
+      </ng-container>
+
+      <!-- Confirmar terminar ruta -->
+      <ng-container *ngIf="hoja === 'terminar'">
+        <p class="text-lg font-black text-basurita-text">¿Terminar la ruta?</p>
+        <p class="text-sm text-basurita-muted mb-5">Llevas {{ porcentaje }}% del recorrido. Al terminar, los vecinos ya no verán el camión.</p>
+        <div class="grid grid-cols-2 gap-3">
+          <button (click)="hoja = null" class="py-3.5 rounded-soft border border-gray-300 font-bold text-basurita-text active:bg-gray-50">Seguir en ruta</button>
+          <button (click)="terminarRuta()" [disabled]="procesando" class="py-3.5 rounded-soft bg-red-700 text-white font-bold active:scale-95 disabled:opacity-60">
+            {{ procesando ? 'Terminando...' : 'Sí, terminar' }}
+          </button>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- ===== Menú lateral del conductor ===== -->
+  <div *ngIf="menuAbierto" class="absolute inset-0 z-[2000]">
+    <div class="absolute inset-0 bg-black/40" (click)="menuAbierto = false" aria-hidden="true"></div>
+
+    <nav class="absolute left-0 top-0 bottom-0 w-[82%] max-w-sm bg-white shadow-2xl flex flex-col animate-[entrar_.2s_ease-out]" aria-label="Menú de perfil">
+      <div class="bg-basurita-primary-dark text-white px-6 pt-10 pb-6">
+        <div class="w-16 h-16 rounded-full bg-white text-basurita-primary-dark font-black text-2xl flex items-center justify-center mb-3">{{ inicial }}</div>
+        <p class="font-bold text-lg leading-tight">{{ nombre }}</p>
+        <p class="text-sm text-green-50 truncate">{{ correo }}</p>
+        <span class="inline-block mt-2 px-2.5 py-0.5 rounded-full bg-white/20 text-xs font-bold">
+          Conductor{{ camionNumero ? ' · Unidad ' + camionNumero : '' }}
+        </span>
+      </div>
+
+      <div class="flex-1 overflow-y-auto py-2">
+        <a routerLink="/operador/perfil" class="flex items-center gap-4 px-6 py-4 text-basurita-text font-semibold active:bg-gray-100">
+          <svg class="w-6 h-6 text-basurita-primary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg>
+          Mis datos
+        </a>
+        <div class="flex items-center gap-4 px-6 py-4 text-basurita-text">
+          <svg class="w-6 h-6 text-basurita-primary shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z"/></svg>
+          <span class="min-w-0">
+            <span class="block font-semibold">Ruta de hoy</span>
+            <span class="block text-xs text-basurita-muted truncate">{{ jornadaId ? rutaNombre : 'Sin ruta asignada' }}</span>
+          </span>
+        </div>
+        <a routerLink="/operador/acerca" class="flex items-center gap-4 px-6 py-4 text-basurita-text font-semibold active:bg-gray-100">
+          <svg class="w-6 h-6 text-basurita-primary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"/></svg>
+          Acerca de Basurita
+        </a>
+      </div>
+
+      <p *ngIf="enRuta" class="mx-4 text-xs text-amber-800 bg-amber-50 rounded-soft p-3">Tienes una ruta en curso. Al cerrar sesión se deja de enviar tu ubicación.</p>
+      <button (click)="cerrarSesion()" class="m-4 flex items-center justify-center gap-2 py-3 rounded-soft border border-red-200 text-red-700 font-bold active:bg-red-50">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9"/></svg>
+        Cerrar sesión
+      </button>
+    </nav>
   </div>
 </div>

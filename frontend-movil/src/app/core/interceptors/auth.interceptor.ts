@@ -2,8 +2,15 @@ import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
+  // Solo las peticiones a NUESTRO backend llevan el token.
+  // Servicios externos (mapas, direcciones) nunca deben recibirlo.
+  if (!req.url.startsWith(environment.apiUrl)) {
+    return next(req);
+  }
+
   const router = inject(Router);
   const token = localStorage.getItem('token');
 
@@ -30,6 +37,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       // RNF-23: Nunca propagar excepciones crudas de servidor al usuario
       const mensajeAmigable =
         error.error?.mensaje ||
+        error.error?.message ||
         'No se pudo completar la operación en este momento. Intenta de nuevo.';
 
       return throwError(() => ({

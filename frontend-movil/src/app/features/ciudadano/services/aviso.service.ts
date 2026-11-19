@@ -7,6 +7,6 @@ export class AvisoCiudadanoService {
   constructor(private http: HttpClient) {}
   getAvisosPublicos() {
     // Ruta pública, no necesita token
-    return this.http.get(`${environment.apiUrl}/v1/ciudadano/avisos`);
+    return this.http.get(`${environment.apiUrl}/v1/avisos/publicos`);
   }
 }

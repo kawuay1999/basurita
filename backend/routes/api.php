@@ -20,7 +20,9 @@ use App\Http\Controllers\Api\V1\UbicacionController;
 use App\Http\Controllers\Api\V1\RutaColoniaController;
 use App\Http\Controllers\Api\V1\SyncController;
 use App\Http\Controllers\Api\V1\ReporteHistorialController;
-use App\Http\Controllers\Api\V1\ReporteController;
+use App\Http\Controllers\Api\V1\CiudadanoController;
+use App\Http\Controllers\Api\V1\PerfilController;
+use App\Http\Controllers\Api\V1\AvisoVecinosController;
 
 Route::prefix('v1')->group(function () {
 
@@ -47,15 +49,25 @@ Route::prefix('v1')->group(function () {
 
         // Cierre de sesión y notificaciones push
         Route::post('/auth/logout', [AuthController::class, 'logout']);
+
+        // Mis datos (cualquier rol)
+        Route::get('/perfil', [PerfilController::class, 'mostrar']);
+        Route::put('/perfil', [PerfilController::class, 'actualizar']);
+        // Token del celular para notificaciones push (ciudadano y conductor)
+        Route::post('/fcm-token', [NotificacionController::class, 'registrarFcmToken']);
         Route::post('/notificaciones/proximidad', [RutaColoniaController::class, 'enviarPushProximidad']);
 
         // ------------------------------------------
         // EXCLUSIVAS DE ADMINISTRADOR
         // ------------------------------------------
         Route::middleware('role:administrador')->group(function () {
-            Route::get('/admin/dashboard', function () {
-                return response()->json(['message' => 'Bienvenido al panel de administración']);
-            });
+            Route::get('/admin/dashboard', [DashboardController::class, 'index']);
+
+            // CRUD de Avisos oficiales
+            Route::get('/admin/avisos', [AvisoController::class, 'index']);
+            Route::post('/admin/avisos', [AvisoController::class, 'store']);
+            Route::put('/admin/avisos/{aviso}', [AvisoController::class, 'update']);
+            Route::delete('/admin/avisos/{aviso}', [AvisoController::class, 'destroy']);
 
             // CRUD de Colonias
             Route::get('/admin/colonias', [ColoniaController::class, 'index']);
@@ -111,18 +123,25 @@ Route::prefix('v1')->group(function () {
             // Incidencias y Sincronización Offline
             Route::post('/operador/incidencias', [IncidenciaController::class, 'store']);
             Route::post('/operador/sincronizar', [SyncController::class, 'sincronizarOperador']);
+
+            // Avisos rápidos del conductor a los vecinos de su ruta
+            Route::post('/operador/avisar-vecinos', [AvisoVecinosController::class, 'enviar']);
         });
 
         // ------------------------------------------
         // EXCLUSIVAS DE CIUDADANO (Y Admin)
         // ------------------------------------------
         Route::middleware('role:ciudadano,administrador')->group(function () {
-            Route::get('/ciudadano/perfil', function (Request $request) {
-                return response()->json(['data' => $request->user()]);
-            });
+            // Perfil, casa y camión más cercano a la casa
+            Route::get('/ciudadano/perfil', [CiudadanoController::class, 'perfil']);
+            Route::put('/ciudadano/perfil', [CiudadanoController::class, 'actualizarPerfil']);
+            Route::put('/ciudadano/casa', [CiudadanoController::class, 'guardarCasa']);
+            Route::get('/ciudadano/camion-cercano', [CiudadanoController::class, 'camionCercano']);
+            Route::get('/ciudadano/historial', [CiudadanoController::class, 'historial']);
 
             Route::get('/ciudadano/notificaciones', [NotificacionController::class, 'index']);
             Route::put('/ciudadano/notificaciones/{id}/leer', [NotificacionController::class, 'marcarLeida']);
+            Route::post('/ciudadano/fcm-token', [NotificacionController::class, 'registrarFcmToken']);
 
             // Seguimiento de colonia e historial
             Route::get('/colonias/{coloniaId}/estado-ruta', [RutaColoniaController::class, 'estadoPorColonia']);

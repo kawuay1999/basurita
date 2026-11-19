@@ -22,6 +22,7 @@ class RutaService
             $ruta = Ruta::create([
                 'nombre' => $data['nombre'],
                 'descripcion' => $data['descripcion'] ?? null,
+                'recorrido' => $data['recorrido'] ?? null,
                 'activa' => $data['activa'] ?? true,
             ]);
 
@@ -46,6 +47,7 @@ class RutaService
             $ruta->update([
                 'nombre' => $data['nombre'] ?? $ruta->nombre,
                 'descripcion' => $data['descripcion'] ?? $ruta->descripcion,
+                'recorrido' => array_key_exists('recorrido', $data) ? $data['recorrido'] : $ruta->recorrido,
                 'activa' => $data['activa'] ?? $ruta->activa,
             ]);
 

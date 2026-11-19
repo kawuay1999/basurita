@@ -31,8 +31,14 @@
 
         <div>
           <label for="password" class="block text-sm font-medium text-basurita-text">Contraseña</label>
-          <div class="mt-1">
-            <input id="password" type="password" formControlName="password" class="input-base" placeholder="••••••••">
+          <div class="mt-1 relative">
+            <input id="password" [type]="showPassword ? 'text' : 'password'" formControlName="password" class="input-base pr-12" placeholder="••••••••">
+            <button type="button" (click)="showPassword = !showPassword"
+                    class="absolute inset-y-0 right-0 flex items-center px-3 text-basurita-muted hover:text-basurita-text"
+                    [attr.aria-label]="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+              <svg *ngIf="!showPassword" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.04 12.32a1 1 0 0 1 0-.64C3.42 7.51 7.36 4.5 12 4.5s8.57 3 9.96 7.18a1 1 0 0 1 0 .64C20.58 16.49 16.64 19.5 12 19.5s-8.57-3-9.96-7.18Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg>
+              <svg *ngIf="showPassword" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.22A10.48 10.48 0 0 0 2.04 12c1.38 4.16 5.32 7.5 9.96 7.5 1.9 0 3.68-.5 5.22-1.38M6.23 6.23A10.45 10.45 0 0 1 12 4.5c4.64 0 8.57 3 9.96 7.18a10.5 10.5 0 0 1-4.19 5.55M6.23 6.23 3 3m3.23 3.23 3.65 3.65m7.89 7.89L21 21m-3.23-3.23-3.65-3.65m0 0a3 3 0 1 0-4.24-4.24m4.24 4.24L9.88 9.88"/></svg>
+            </button>
           </div>
         </div>
 

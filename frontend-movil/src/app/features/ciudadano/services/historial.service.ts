@@ -7,11 +7,12 @@ import { environment } from '../../../../environments/environment';
   providedIn: 'root'
 })
 export class HistorialService {
-  private apiUrl = `${environment.apiUrl}/v1/colonias`;
+  private apiUrl = `${environment.apiUrl}/v1/ciudadano`;
 
   constructor(private http: HttpClient) {}
 
-  obtenerHistorialColonia(coloniaId: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/${coloniaId}/historial`);
+  /** Historial de los últimos 7 días calculado con la ubicación de la casa. */
+  obtenerHistorial(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/historial`);
   }
 }

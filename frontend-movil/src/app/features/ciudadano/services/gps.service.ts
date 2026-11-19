@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, timer, of, fromEvent, merge } from 'rxjs';
-import { switchMap, catchError, retry, tap } from 'rxjs/operators';
+import { switchMap, catchError, retry, tap, map } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 
 export interface EstadoUbicacionCiudadano {
@@ -11,6 +11,7 @@ export interface EstadoUbicacionCiudadano {
   sin_conexion: boolean;
   mensaje_alerta: string;
   mensaje_tiempo: string;
+  titulo?: string;
   estado_ruta: 'pending' | 'active' | 'finished';
 }
 
@@ -18,105 +19,100 @@ export interface EstadoUbicacionCiudadano {
   providedIn: 'root'
 })
 export class GpsService {
-  private apiUrl = `${environment.apiUrl}/v1/gps`;
+  private apiUrl = `${environment.apiUrl}/v1/ciudadano`;
+  private readonly CACHE_KEY = 'basurita_ultima_ubicacion_camion';
 
   constructor(private http: HttpClient) {}
 
-  trackCamionColonia(coloniaId: number): Observable<EstadoUbicacionCiudadano> {
-    const cacheKey = `basurita_ultima_ubicacion_colonia_${coloniaId}`;
-
-    // Escuchar también cuando regrese el internet para consultar de inmediato
-    const disparador = merge(
-      timer(0, 10000),
-      fromEvent(window, 'online')
-    );
+  /**
+   * Cada 10 s consulta el camión en ruta más cercano a la casa del ciudadano.
+   * Si no hay internet, muestra la última posición guardada en el celular.
+   */
+  trackCamionCercano(): Observable<EstadoUbicacionCiudadano> {
+    const disparador = merge(timer(0, 10000), fromEvent(window, 'online'));
 
     return disparador.pipe(
       switchMap(() => {
-        // Si el navegador sabe que no tiene red, ir directo a caché sin esperar timeout
         if (!navigator.onLine) {
-          return of(this.obtenerDesdeCache(cacheKey));
+          return of(this.obtenerDesdeCache());
         }
 
-        return this.http.get<any>(`${this.apiUrl}/colonia/${coloniaId}/camion`).pipe(
+        return this.http.get<any>(`${this.apiUrl}/camion-cercano`).pipe(
           retry({ count: 2, delay: () => timer(1500) }),
           tap((res) => {
-            // Guardar en local solo si el servidor devolvió coordenadas reales válidas
             if (res && typeof res.lat === 'number' && typeof res.lng === 'number') {
-              localStorage.setItem(cacheKey, JSON.stringify({
-                lat: res.lat,
-                lng: res.lng,
-                guardado_en: Date.now()
-              }));
+              localStorage.setItem(this.CACHE_KEY, JSON.stringify({ lat: res.lat, lng: res.lng, guardado_en: Date.now() }));
             }
           }),
-          switchMap((res) => {
+          map((res): EstadoUbicacionCiudadano => {
             if (res && typeof res.lat === 'number' && typeof res.lng === 'number') {
-              return of({
+              const distancia = this.formatearDistancia(res.distancia_metros);
+              return {
                 tiene_ubicacion: true,
                 lat: res.lat,
                 lng: res.lng,
-                sin_conexion: Boolean(res.senal_perdida),
+                sin_conexion: false,
+                // senal_perdida = el CAMIÓN lleva 2+ min sin reportar (el ciudadano sí tiene internet)
                 mensaje_alerta: res.senal_perdida
-                  ? 'Sin conexión. Mostrando última ubicación guardada.'
+                  ? 'El camión no ha enviado su ubicación recientemente. Mostrando la última conocida.'
                   : '',
-                mensaje_tiempo: res.mensaje_tiempo || 'En vivo',
-                estado_ruta: 'active' as const
-              });
+                titulo: distancia ? `El camión está a ${distancia} de tu casa` : 'El camión está cerca de tu casa',
+                mensaje_tiempo: [res.camion ? `Unidad ${res.camion}` : '', res.mensaje_tiempo || 'En vivo']
+                  .filter(Boolean).join(' · '),
+                estado_ruta: 'active'
+              };
             }
 
-            // Si no hay ruta activa en el servidor
-            return of({
+            return {
               tiene_ubicacion: false,
               sin_conexion: false,
               mensaje_alerta: '',
-              mensaje_tiempo: res?.mensaje || 'Aún no inicia el recorrido',
-              estado_ruta: 'pending' as const
-            });
+              titulo: res?.estado_ruta === 'sin_casa' ? 'Falta la ubicación de tu casa' : 'El camión aún no pasa por tu zona',
+              mensaje_tiempo: res?.mensaje || 'Te avisaremos cuando se acerque.',
+              estado_ruta: 'pending'
+            };
           }),
-          catchError(() => of(this.obtenerDesdeCache(cacheKey)))
+          catchError(() => of(this.obtenerDesdeCache()))
         );
       })
     );
   }
 
+  private formatearDistancia(metros?: number): string {
+    if (typeof metros !== 'number') return '';
+    return metros < 1000 ? `${metros} m` : `${(metros / 1000).toFixed(1)} km`;
+  }
+
   /**
-   * Recupera la última ubicación real almacenada en localStorage.
+   * Recupera la última ubicación real almacenada en el celular.
    * Nunca inventa coordenadas si no existe registro previo.
    */
-  private obtenerDesdeCache(cacheKey: string): EstadoUbicacionCiudadano {
-    const raw = localStorage.getItem(cacheKey);
-    if (!raw) {
-      return {
-        tiene_ubicacion: false,
-        sin_conexion: true,
-        mensaje_alerta: 'Sin conexión. No hay ubicaciones previas guardadas.',
-        mensaje_tiempo: 'Esperando conexión',
-        estado_ruta: 'pending'
-      };
-    }
+  private obtenerDesdeCache(): EstadoUbicacionCiudadano {
+    const sinDatos: EstadoUbicacionCiudadano = {
+      tiene_ubicacion: false,
+      sin_conexion: true,
+      mensaje_alerta: 'Sin conexión a internet.',
+      titulo: 'Sin conexión',
+      mensaje_tiempo: 'Esperando conexión',
+      estado_ruta: 'pending'
+    };
 
     try {
-      const guardado = JSON.parse(raw);
+      const guardado = JSON.parse(localStorage.getItem(this.CACHE_KEY) || 'null');
+      if (!guardado) return sinDatos;
       const minutos = Math.max(1, Math.floor((Date.now() - guardado.guardado_en) / 60000));
-
       return {
         tiene_ubicacion: true,
         lat: guardado.lat,
         lng: guardado.lng,
         sin_conexion: true,
-        mensaje_alerta: 'Sin conexión. Mostrando última ubicación guardada.',
+        mensaje_alerta: 'Sin conexión a internet. Mostrando la última ubicación guardada.',
+        titulo: 'Última ubicación conocida del camión',
         mensaje_tiempo: `Última actualización: hace ${minutos} min`,
         estado_ruta: 'active'
       };
     } catch {
-      return {
-        tiene_ubicacion: false,
-        sin_conexion: true,
-        mensaje_alerta: 'Sin conexión. No hay ubicaciones previas guardadas.',
-        mensaje_tiempo: 'Esperando conexión',
-        estado_ruta: 'pending'
-      };
+      return sinDatos;
     }
   }
 }

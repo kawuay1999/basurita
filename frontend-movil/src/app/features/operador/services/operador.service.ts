@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, fromEvent, merge, interval } from 'rxjs';
+import { BehaviorSubject, Observable, fromEvent, merge, interval } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 
 export interface RegistroGpsOffline {
@@ -74,6 +74,25 @@ export class OperadorService {
       const v = c === 'x' ? r : (r & 0x3) | 0x8;
       return v.toString(16);
     });
+  }
+
+  // --- JORNADA DEL DÍA ---
+  /** Ruta asignada al operador para hoy (data = null si no tiene). */
+  getJornadaHoy(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/jornada-hoy`);
+  }
+
+  iniciarRuta(): Observable<any> {
+    return this.http.post(`${this.apiUrl}/iniciar-ruta`, {});
+  }
+
+  finalizarRuta(): Observable<any> {
+    return this.http.post(`${this.apiUrl}/finalizar-ruta`, {});
+  }
+
+  /** Aviso rápido a los vecinos de la ruta: pasando | en_camino | retraso | no_pasara */
+  avisarVecinos(tipo: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/avisar-vecinos`, { tipo });
   }
 
   // --- REGISTRO DE GPS ---

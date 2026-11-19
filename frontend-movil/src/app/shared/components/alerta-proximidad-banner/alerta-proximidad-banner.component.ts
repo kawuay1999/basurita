@@ -10,7 +10,7 @@ import { NotificacionPushService, AlertaVisual } from '../../../features/ciudada
     <div *ngIf="alerta.visible" 
          role="alert"
          aria-live="assertive"
-         class="fixed top-20 left-4 right-4 z-1050 bg-emerald-800 text-white p-5 rounded-softer shadow-floating border-2 border-white flex items-start gap-4 transition-all duration-300">
+         class="fixed top-20 left-4 right-4 z-[1500] bg-emerald-800 text-white p-5 rounded-softer shadow-floating border-2 border-white flex items-start gap-4 transition-all duration-300">
       
       <!-- Icono Lucide: Camión en movimiento -->
       <div class="bg-white/20 p-3 rounded-soft shrink-0">

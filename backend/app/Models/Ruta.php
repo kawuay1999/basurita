@@ -9,8 +9,8 @@ class Ruta extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['nombre', 'descripcion', 'activa'];
-    protected $casts = ['activa' => 'boolean'];
+    protected $fillable = ['nombre', 'descripcion', 'recorrido', 'activa'];
+    protected $casts = ['activa' => 'boolean', 'recorrido' => 'array'];
 
     // Una ruta tiene muchas colonias
     public function colonias()
