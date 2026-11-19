@@ -20,9 +20,13 @@ class GeocercaService
         // Obtenemos las colonias asignadas a la ruta de esta jornada
         $coloniasIds = $jornada->ruta->colonias()->pluck('colonias.id');
 
-        // Buscamos ciudadanos de esas colonias que tengan coordenadas registradas
+        // Ciudadanos con casa registrada: de las colonias de la ruta o sin colonia
+        // (los que se registran desde la app eligen su casa en el mapa y no tienen colonia).
+        // El filtro real es la distancia, que se evalúa abajo.
         $ciudadanos = User::where('role', 'ciudadano')
-            ->whereIn('colonia_id', $coloniasIds)
+            ->where(function ($q) use ($coloniasIds) {
+                $q->whereIn('colonia_id', $coloniasIds)->orWhereNull('colonia_id');
+            })
             ->whereNotNull('latitud_casa')
             ->whereNotNull('longitud_casa')
             ->get();
@@ -79,7 +83,7 @@ class GeocercaService
     private function dispararAlertaProximidad(User $ciudadano, Jornada $jornada): void
     {
         $titulo = 'Camión recolector cerca';
-        $mensaje = 'El camión está cerca de tu colonia, saca tu basura';
+        $mensaje = 'El camión está a unos minutos de tu casa. ¡Saca tu basura!';
 
         // 1. Guardar en historial de notificaciones de la app
         Notificacion::create([
@@ -95,38 +99,7 @@ class GeocercaService
             'jornada_id' => $jornada->id,
         ]);
 
-        // 3. Enviar Push Notification con política de reintentos (ej. Firebase FCM)
-        if (!empty($ciudadano->fcm_token)) {
-            $this->enviarPushConReintentos($ciudadano->fcm_token, $titulo, $mensaje);
-        }
-    }
-
-    /**
-     * Envía la notificación push con hasta 3 reintentos en caso de fallo de red.
-     */
-    private function enviarPushConReintentos(string $token, string $titulo, string $mensaje): void
-    {
-        try {
-            Http::retry(3, 500) // 3 intentos esperando 500ms entre cada uno
-                ->withHeaders([
-                    'Authorization' => 'key=' . config('services.fcm.server_key'),
-                    'Content-Type' => 'application/json',
-                ])
-                ->post('https://fcm.googleapis.com/fcm/send', [
-                    'to' => $token,
-                    'notification' => [
-                        'title' => $titulo,
-                        'body' => $mensaje,
-                        'sound' => 'default',
-                    ],
-                    'data' => [
-                        'tipo' => 'proximidad_camion',
-                        'vibrar' => true
-                    ]
-                ]);
-        } catch (\Exception $e) {
-            // Registramos el error silenciosamente sin detener el flujo GPS
-            Log::warning("Fallo envío Push tras reintentos para token: {$token}. Error: " . $e->getMessage());
-        }
+        // 3. Notificación push al celular (Firebase). Si no está configurado, no pasa nada.
+        app(FcmService::class)->enviarA($ciudadano, $titulo, $mensaje, ['tipo' => 'proximidad_camion']);
     }
 }

@@ -25,4 +25,15 @@ class NotificacionController extends Controller
         $this->notificacionService->marcarComoLeida($id, $request->user()->id);
         return response()->json(['status' => 'success', 'message' => 'Notificación leída.']);
     }
+
+    // Guarda el token del dispositivo para notificaciones push
+    public function registrarFcmToken(Request $request) {
+        $validated = $request->validate([
+            'fcm_token' => 'required|string|max:255',
+        ]);
+
+        $request->user()->update(['fcm_token' => $validated['fcm_token']]);
+
+        return response()->json(['status' => 'success', 'message' => 'Token de notificaciones registrado.']);
+    }
 }

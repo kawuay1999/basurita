@@ -22,6 +22,11 @@ class User extends Authenticatable
         'locked_until',
         'recovery_code',
         'recovery_code_expires_at',
+        'fcm_token',
+        'latitud_casa',
+        'longitud_casa',
+        'direccion_casa',
+        'radio_notificacion_metros',
     ];
 
     protected $hidden = [

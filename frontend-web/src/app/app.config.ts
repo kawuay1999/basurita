@@ -9,8 +9,6 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideHttpClient(withInterceptors([authInterceptor])),
     provideBrowserGlobalErrorListeners(),
-    provideZoneChangeDetection(),
-    provideRouter(routes),
-    provideHttpClient()
+    provideZoneChangeDetection()
   ]
 };

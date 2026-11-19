@@ -28,8 +28,14 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         router.navigate(['/auth/login']);
       }
       // RNF-23: Nunca propagar excepciones crudas de servidor al usuario
+      // Errores de validación de Laravel: { message, errors: { campo: [msg] } }
+      const primerError = error.error?.errors
+        ? (Object.values(error.error.errors)[0] as string[] | undefined)?.[0]
+        : undefined;
       const mensajeAmigable =
         error.error?.mensaje ||
+        primerError ||
+        (error.status && error.status < 500 ? error.error?.message : undefined) ||
         'No se pudo completar la operación en este momento. Intenta de nuevo.';
 
       return throwError(() => ({

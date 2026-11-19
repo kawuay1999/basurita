@@ -31,6 +31,9 @@ class RutaController extends Controller
         $validated = $request->validate([
             'nombre' => 'required|string|max:255|unique:rutas,nombre',
             'descripcion' => 'nullable|string',
+            'recorrido' => 'nullable|array',
+            'recorrido.*' => 'array|size:2',
+            'recorrido.*.*' => 'numeric',
             'activa' => 'boolean',
             'colonias' => 'required|array|min:1',
             'colonias.*' => 'integer|exists:colonias,id', // Valida que los IDs existan
@@ -54,6 +57,9 @@ class RutaController extends Controller
         $validated = $request->validate([
             'nombre' => ['sometimes', 'required', 'string', 'max:255', Rule::unique('rutas')->ignore($ruta->id)],
             'descripcion' => 'nullable|string',
+            'recorrido' => 'nullable|array',
+            'recorrido.*' => 'array|size:2',
+            'recorrido.*.*' => 'numeric',
             'activa' => 'boolean',
             'colonias' => 'sometimes|array|min:1',
             'colonias.*' => 'integer|exists:colonias,id',

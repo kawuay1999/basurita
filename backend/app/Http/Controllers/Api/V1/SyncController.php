@@ -52,7 +52,7 @@ class SyncController extends Controller
                         'latitud' => $item['latitud'],
                         'longitud' => $item['longitud'],
                         'precision_metros' => $item['precision_metros'] ?? 15,
-                        'fecha_hora_dispositivo' => Carbon::parse($item['fecha_hora_dispositivo']),
+                        'fecha_hora_dispositivo' => Carbon::parse($item['fecha_hora_dispositivo'])->setTimezone(config('app.timezone')),
                     ]
                 );
 
@@ -94,7 +94,7 @@ class SyncController extends Controller
                         'tipo' => $inc['tipo'],
                         'descripcion' => $inc['descripcion'] ?? 'Reporte sincronizado tras recuperar señal.',
                         'estado' => 'nueva',
-                        'created_at' => Carbon::parse($inc['fecha_hora_dispositivo']),
+                        'created_at' => Carbon::parse($inc['fecha_hora_dispositivo'])->setTimezone(config('app.timezone')),
                     ]
                 );
 

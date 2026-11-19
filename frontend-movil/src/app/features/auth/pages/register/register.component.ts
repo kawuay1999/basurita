@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
+import { switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-register',
@@ -11,34 +12,26 @@ import { ButtonComponent } from '../../../../shared/components/button/button.com
   imports: [CommonModule, ReactiveFormsModule, RouterModule, ButtonComponent],
   templateUrl: './register.component.html'
 })
-export class RegisterComponent implements OnInit {
+export class RegisterComponent {
   registerForm: FormGroup;
   isLoading = false;
   errorMessage = '';
-  
-  // Simulando carga de colonias (Esto luego puede venir de un ColoniasService)
-  colonias = [
-    { id: 1, nombre: 'Centro Histórico' },
-    { id: 2, nombre: 'Villas del Sol' },
-    { id: 3, nombre: 'Hacienda Real' }
-  ];
+  showPassword = false; // Ojito para mostrar/ocultar contraseña
 
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router
   ) {
+    // La ubicación de la casa se elige en el mapa después de iniciar sesión,
+    // por eso aquí ya no se pide la colonia.
     this.registerForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
       email: ['', [Validators.required, Validators.email]],
       phone: ['', [Validators.required, Validators.pattern('^[0-9]{10}$')]],
-      colonia_id: ['', [Validators.required]],
-      password: ['', [Validators.required, Validators.minLength(8)]],
-      role: ['ciudadano'] // Forzamos el rol desde el frontend
+      password: ['', [Validators.required, Validators.minLength(8)]]
     });
   }
-
-  ngOnInit(): void {}
 
   onSubmit() {
     if (this.registerForm.invalid) {
@@ -49,14 +42,22 @@ export class RegisterComponent implements OnInit {
     this.isLoading = true;
     this.errorMessage = '';
 
-    this.authService.register(this.registerForm.value).subscribe({
+    const { email, password } = this.registerForm.value;
+
+    // El registro no devuelve token: al terminar, iniciamos sesión con las mismas credenciales
+    this.authService.register(this.registerForm.value).pipe(
+      switchMap(() => this.authService.login({ email, password }))
+    ).subscribe({
       next: (res: any) => {
         this.authService.saveSession(res.token, res.user);
-        this.router.navigate(['/ciudadano/mapa']);
+        // Siguiente paso: pedir permiso de ubicación y elegir su casa
+        this.router.navigate(['/permiso-ubicacion']);
       },
-      error: () => {
+      error: (err: any) => {
         this.isLoading = false;
-        this.errorMessage = 'Ocurrió un error al registrarte. Verifica que el correo no esté en uso.';
+        this.errorMessage = err?.status === 422
+          ? 'Ese correo ya está registrado o algún dato no es válido.'
+          : 'Ocurrió un error al registrarte. Intenta de nuevo.';
       }
     });
   }

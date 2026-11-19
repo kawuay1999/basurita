@@ -50,13 +50,37 @@ class JornadaService
             ]);
         }
 
-        return Jornada::create([
+        // Regla: un camión no puede estar en dos rutas activas el mismo día
+        $camionOcupado = Jornada::where('camion_id', $data['camion_id'])
+            ->whereDate('fecha', $data['fecha'])
+            ->whereIn('estado', ['programada', 'en_curso'])
+            ->exists();
+
+        if ($camionOcupado) {
+            throw ValidationException::withMessages([
+                'camion_id' => ['Este camión ya está asignado a otra ruta activa en esa fecha.']
+            ]);
+        }
+
+        $jornada = Jornada::create([
             'operador_id' => $data['operador_id'],
             'camion_id' => $data['camion_id'],
             'ruta_id' => $data['ruta_id'],
             'fecha' => $data['fecha'],
             'estado' => $data['estado'] ?? 'programada',
         ])->load(['operador', 'camion', 'ruta']);
+
+        // Aviso al celular del conductor (si tiene la APK y Firebase está configurado)
+        $fecha = Carbon::parse($data['fecha']);
+        $cuando = $fecha->isToday() ? 'hoy' : 'el ' . $fecha->locale('es')->isoFormat('dddd D [de] MMMM');
+        app(FcmService::class)->enviarA(
+            $operador,
+            'Tienes una nueva ruta',
+            "{$jornada->ruta->nombre} {$cuando} con el camión {$jornada->camion->numero_economico}.",
+            ['tipo' => 'nueva_ruta']
+        );
+
+        return $jornada;
     }
 
     public function updateJornada(Jornada $jornada, array $data): Jornada

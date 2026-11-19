@@ -1,0 +1,58 @@
+<?php
+
+// Mensajes de validación en español (solo las reglas que usa Basurita).
+return [
+    'accepted' => 'Debes aceptar :attribute.',
+    'after' => ':Attribute debe ser posterior a :date.',
+    'array' => ':Attribute no es válido.',
+    'between' => [
+        'numeric' => ':Attribute debe estar entre :min y :max.',
+        'string' => ':Attribute debe tener entre :min y :max caracteres.',
+    ],
+    'boolean' => ':Attribute debe ser verdadero o falso.',
+    'confirmed' => 'La confirmación de :attribute no coincide.',
+    'date' => ':Attribute no es una fecha válida.',
+    'date_format' => ':Attribute no tiene el formato :format.',
+    'email' => ':Attribute debe ser un correo válido.',
+    'exists' => ':Attribute seleccionado no existe.',
+    'in' => ':Attribute seleccionado no es válido.',
+    'integer' => ':Attribute debe ser un número entero.',
+    'max' => [
+        'numeric' => ':Attribute no puede ser mayor que :max.',
+        'string' => ':Attribute no puede tener más de :max caracteres.',
+        'array' => ':Attribute no puede tener más de :max elementos.',
+    ],
+    'min' => [
+        'numeric' => ':Attribute debe ser al menos :min.',
+        'string' => ':Attribute debe tener al menos :min caracteres.',
+        'array' => ':Attribute debe tener al menos :min elementos.',
+    ],
+    'numeric' => ':Attribute debe ser un número.',
+    'required' => ':Attribute es obligatorio.',
+    'size' => [
+        'array' => ':Attribute debe tener :size elementos.',
+        'string' => ':Attribute debe tener :size caracteres.',
+    ],
+    'string' => ':Attribute debe ser texto.',
+    'unique' => 'Ese :attribute ya está registrado.',
+
+    'attributes' => [
+        'name' => 'nombre',
+        'email' => 'correo',
+        'password' => 'contraseña',
+        'phone' => 'teléfono',
+        'fecha' => 'fecha',
+        'operador_id' => 'operador',
+        'camion_id' => 'camión',
+        'ruta_id' => 'ruta',
+        'tipo' => 'tipo',
+        'lat' => 'latitud',
+        'lng' => 'longitud',
+        'direccion' => 'dirección',
+        'nombre' => 'nombre',
+        'colonias' => 'colonias',
+        'horarios' => 'horarios',
+        'estado' => 'estado',
+        'fcm_token' => 'token',
+    ],
+];

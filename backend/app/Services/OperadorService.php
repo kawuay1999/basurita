@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Jornada;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Hash;
@@ -61,8 +62,18 @@ class OperadorService
 
     public function deleteOperador(User $operador): void
     {
-        // Regla de integridad: Si el operador tiene jornadas asignadas en el futuro, no se debería borrar.
-        // Por ahora, simplemente lo eliminamos. (En el módulo 6 agregaremos la validación de jornadas).
+        // Regla de integridad: no se borra si tiene rutas programadas o en curso
+        $tieneRutasActivas = Jornada::where('operador_id', $operador->id)
+            ->whereIn('estado', ['programada', 'en_curso'])
+            ->exists();
+
+        if ($tieneRutasActivas) {
+            throw ValidationException::withMessages([
+                'operador' => ['Este operador tiene rutas programadas o en curso. Cancélalas o reasígnalas antes de eliminarlo.']
+            ]);
+        }
+
+        $operador->tokens()->delete();
         $operador->delete();
     }
 }

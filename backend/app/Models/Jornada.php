@@ -31,4 +31,14 @@ class Jornada extends Model
     {
         return $this->belongsTo(Ruta::class, 'ruta_id');
     }
+
+    public function ubicaciones()
+    {
+        return $this->hasMany(Ubicacion::class, 'jornada_id');
+    }
+
+    public function incidencias()
+    {
+        return $this->hasMany(Incidencia::class, 'jornada_id');
+    }
 }

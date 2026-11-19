@@ -10,7 +10,7 @@
     </a>
     <div>
       <h1 class="text-2xl font-bold text-basurita-text">Historial de Recolección</h1>
-      <p class="text-sm text-basurita-muted">Registro real de atención en tu colonia</p>
+      <p class="text-sm text-basurita-muted">Cuándo pasó el camión por tu calle</p>
     </div>
   </header>
 
@@ -75,10 +75,10 @@
 
     <!-- Esta Semana -->
     <div>
-      <h3 class="text-sm font-bold uppercase tracking-wider text-basurita-muted mb-3 px-1">Esta semana</h3>
+      <h3 class="text-sm font-bold uppercase tracking-wider text-basurita-muted mb-3 px-1">Últimos 7 días</h3>
       
       <div *ngIf="historial.semana.length === 0" class="bg-white p-6 rounded-softer text-center text-sm text-basurita-muted shadow-soft">
-        No hay recorridos registrados en lo que va de la semana.
+        No hay recorridos por tu calle en los últimos 7 días.
       </div>
 
       <div class="space-y-3">
@@ -88,9 +88,9 @@
             <p class="font-bold text-basurita-text text-sm">{{ item.dia_semana }} ({{ item.fecha }})</p>
             <p class="text-xs text-basurita-muted mt-0.5">{{ item.ruta }} • {{ item.unidad }}</p>
           </div>
-          <span [ngClass]="item.atendida ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'"
+          <span [ngClass]="item.atendida ? 'bg-green-100 text-green-800' : (item.estado === 'no_paso' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800')"
                 class="px-3 py-1 rounded-full text-xs font-bold">
-            {{ item.atendida ? 'Atendida' : 'En proceso' }}
+            {{ item.atendida ? 'Pasó ' + (item.hora_actualizacion || '') : (item.estado === 'en_curso' ? 'En camino' : (item.estado === 'no_paso' ? 'No pasó' : 'Programada')) }}
           </span>
         </div>
       </div>

@@ -17,26 +17,22 @@ export class HistorialComponent implements OnInit {
   constructor(private historialService: HistorialService) {}
 
   ngOnInit(): void {
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-      const user = JSON.parse(userStr);
-      if (user && user.colonia_id) {
-        this.cargarHistorial(user.colonia_id);
-        return;
-      }
-    }
-    this.isLoading = false;
-    this.errorMensaje = 'No tienes una colonia asignada en tu perfil.';
+    this.cargarHistorial();
   }
 
-  cargarHistorial(coloniaId: number): void {
+  /** El historial se calcula con la ubicación de la casa (ya no depende de la colonia). */
+  cargarHistorial(): void {
     this.isLoading = true;
     this.errorMensaje = '';
 
-    this.historialService.obtenerHistorialColonia(coloniaId).subscribe({
+    this.historialService.obtenerHistorial().subscribe({
       next: (res) => {
-        this.historial = res.data;
         this.isLoading = false;
+        if (!res?.data) {
+          this.errorMensaje = res?.mensaje || 'Elige la ubicación de tu casa para ver tu historial.';
+          return;
+        }
+        this.historial = res.data;
       },
       error: () => {
         this.isLoading = false;

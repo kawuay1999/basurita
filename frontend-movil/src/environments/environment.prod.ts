@@ -1,4 +1,5 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://tu-dominio-de-produccion.com/api'
+  apiUrl: 'https://tu-dominio-de-produccion.com/api',
+  modoPrueba: false
 };

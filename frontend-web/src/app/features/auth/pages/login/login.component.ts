@@ -15,6 +15,7 @@ export class LoginComponent {
   loginForm: FormGroup;
   isLoading = false;
   errorMessage = '';
+  showPassword = false; // Ojito para mostrar/ocultar contraseña
 
   constructor(
     private fb: FormBuilder,
@@ -42,6 +43,12 @@ export class LoginComponent {
         // Ruteo basado en RBAC
         if (role === 'administrador') {
           this.router.navigate(['/admin/dashboard']);
+        } else {
+          // El panel web es exclusivo del administrador
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          this.isLoading = false;
+          this.errorMessage = 'Este panel es solo para administradores. Usa la app móvil para operador o ciudadano.';
         }
       },
       error: () => {

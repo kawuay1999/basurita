@@ -1,0 +1,31 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "backend",
+      "runtimeExecutable": "php",
+      "runtimeArgs": ["backend/artisan", "serve", "--port=8000"],
+      "port": 8000
+    },
+    {
+      "name": "web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "frontend-web", "start"],
+      "port": 4200
+    },
+    {
+      "name": "movil",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "frontend-movil", "start"],
+      "port": 4300,
+      "url": "https://localhost:4300"
+    },
+    {
+      "name": "movil-prueba-local",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "frontend-movil", "run", "ng", "--", "serve", "--port", "4301"],
+      "port": 4301,
+      "autoPort": false
+    }
+  ]
+}

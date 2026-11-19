@@ -9,6 +9,18 @@ use Carbon\Carbon;
 
 class BasuritaDemoSeeder extends Seeder
 {
+    /** Recorrido de prueba de la Ruta Sur, trazado sobre calles reales. */
+    private const RECORRIDO_RUTA_SUR = [
+        [19.655772, -99.016044], [19.655927, -99.016946], [19.655684, -99.016974], [19.655608, -99.016903],
+        [19.65543, -99.015943], [19.655297, -99.015698], [19.655105, -99.014553], [19.655059, -99.014221],
+        [19.655081, -99.014174], [19.654925, -99.013752], [19.654374, -99.013897], [19.65395, -99.013184],
+        [19.654571, -99.013044], [19.65395, -99.013184], [19.653634, -99.012622], [19.653908, -99.012563],
+        [19.655169, -99.012292], [19.654755, -99.011586], [19.654446, -99.011397], [19.654353, -99.011276],
+        [19.653817, -99.010193], [19.653727, -99.010074], [19.653172, -99.010829], [19.652886, -99.011025],
+        [19.652342, -99.010105], [19.652066, -99.009638], [19.652256, -99.00954], [19.654324, -99.009284],
+        [19.653654, -99.008096], [19.653957, -99.008026],
+    ];
+
     public function run(): void
     {
         DB::transaction(function () {
@@ -77,6 +89,33 @@ class BasuritaDemoSeeder extends Seeder
                     'created_at' => $ahora,
                     'updated_at' => $ahora,
                 ],
+                // Usuarios extra de prueba (ciudadano registrado y conductor dado de alta por admin)
+                [
+                    'name' => 'Ana Ciudadana Prueba',
+                    'email' => 'ana.ciudadana@basurita.test',
+                    'password' => Hash::make('Ciudadana2026*'),
+                    'telefono' => '5511112222',
+                    'role' => 'ciudadano',
+                    'colonia_id' => $coloniaHeroesId,
+                    'latitud_casa' => null,
+                    'longitud_casa' => null,
+                    'radio_notificacion_metros' => 350,
+                    'created_at' => $ahora,
+                    'updated_at' => $ahora,
+                ],
+                [
+                    'name' => 'Jorge Conductor Prueba',
+                    'email' => 'jorge.conductor@basurita.test',
+                    'password' => Hash::make('Conductor2026*'),
+                    'telefono' => '5533334444',
+                    'role' => 'operador',
+                    'colonia_id' => null,
+                    'latitud_casa' => null,
+                    'longitud_casa' => null,
+                    'radio_notificacion_metros' => null,
+                    'created_at' => $ahora,
+                    'updated_at' => $ahora,
+                ],
             ]);
 
             $operadorId = DB::table('users')->where('email', 'operador@basurita.gob.mx')->value('id');
@@ -104,6 +143,8 @@ class BasuritaDemoSeeder extends Seeder
             $rutaSurId = DB::table('rutas')->insertGetId([
                 'nombre' => 'Ruta Sur - Héroes y Ojo de Agua',
                 'descripcion' => 'Recolección matutina sector residencial sur',
+                // Recorrido por calles reales de Los Héroes Tecámac (puntos [lat, lng])
+                'recorrido' => json_encode(self::RECORRIDO_RUTA_SUR),
                 'activa' => true,
                 'created_at' => $ahora,
                 'updated_at' => $ahora,

@@ -13,9 +13,13 @@
   --color-basurita-primary: #16A34A;
   --color-basurita-secondary: #0EA5E9;
   --color-basurita-danger: #EF4444;
+  --color-basurita-primary-dark: #15803D;
+  --color-basurita-muted: #64748B;
 
   --radius-soft: 12px;
+  --radius-softer: 18px;
 
+  --shadow-soft: 0 2px 10px rgba(15, 23, 42, 0.06);
   --shadow-floating: 0 8px 24px rgba(0, 0, 0, 0.15);
 }
 

@@ -48,7 +48,10 @@ class GpsController extends Controller
             'latitud' => $request->latitud,
             'longitud' => $request->longitud,
             'precision_metros' => $request->precision_metros ?? 10,
-            'fecha_hora_dispositivo' => $request->fecha_hora_dispositivo ?? Carbon::now(),
+            // El celular manda la hora en UTC: se guarda en la hora local de la app
+            'fecha_hora_dispositivo' => $request->fecha_hora_dispositivo
+                ? Carbon::parse($request->fecha_hora_dispositivo)->setTimezone(config('app.timezone'))
+                : Carbon::now(),
         ]);
 
         // 2. Actualizar última ubicación conocida en Caché (TTL 24 horas)
