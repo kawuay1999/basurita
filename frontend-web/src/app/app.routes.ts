@@ -7,6 +7,7 @@ import { CamionesComponent } from './features/admin/pages/camiones/camiones.comp
 import { ReportesComponent } from './features/admin/pages/reportes/reportes.component';
 import { OperadoresComponent } from './features/admin/pages/operadores/operadores.component';
 import { AsignacionesComponent } from './features/admin/pages/asignaciones/asignaciones.component';
+import { UsuariosComponent } from './features/admin/pages/usuarios/usuarios.component';
 import { roleGuard } from './features/auth/guards/role.guard';
 
 export const routes: Routes = [
@@ -23,6 +24,7 @@ export const routes: Routes = [
       { path: 'reportes', component: ReportesComponent },
       { path: 'operadores', component: OperadoresComponent },
       { path: 'asignaciones', component: AsignacionesComponent },
+      { path: 'usuarios', component: UsuariosComponent },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },

@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Models\CalendarioRecoleccion;
 use App\Models\Jornada;
+use App\Models\Ruta;
 use App\Models\Ubicacion;
 use App\Support\Geo;
 use Carbon\Carbon;
@@ -122,6 +124,94 @@ class CiudadanoController extends Controller
 
     // Se considera que el camión "pasó por tu casa" si estuvo a esta distancia o menos
     const METROS_PASO_POR_CASA = 300;
+
+    /**
+     * Calendario del mes para el ciudadano:
+     * - dias_programados: días que el admin publicó (en verde)
+     * - dias_atendidos: días en que el camión de verdad pasó cerca de su casa
+     */
+    public function calendario(Request $request): JsonResponse
+    {
+        $v = $request->validate([
+            'anio' => 'required|integer|min:2024|max:2100',
+            'mes' => 'required|integer|between:1,12',
+        ]);
+        $user = $request->user();
+        $anio = (int) $v['anio'];
+        $mes = (int) $v['mes'];
+
+        // Rutas cuyo recorrido pasa por su casa
+        $rutasCasa = collect();
+        if ($user->latitud_casa !== null && $user->longitud_casa !== null) {
+            $lat = (float) $user->latitud_casa;
+            $lng = (float) $user->longitud_casa;
+            $rutasCasa = Ruta::where('activa', true)->get()->filter(function ($r) use ($lat, $lng) {
+                $rec = $r->recorrido ?? [];
+                return count($rec) > 0 && Geo::distanciaARecorrido($lat, $lng, $rec) <= self::METROS_PASO_POR_CASA;
+            })->values();
+        }
+
+        $publicados = CalendarioRecoleccion::with('ruta:id,nombre')
+            ->where('anio', $anio)->where('mes', $mes)->where('publicado', true)->get();
+
+        // Si hay calendario de SU ruta, manda ese; si no, el general (todas las rutas)
+        $deSuRuta = $publicados->whereIn('ruta_id', $rutasCasa->pluck('id'))->values();
+        $aplican = $deSuRuta->isNotEmpty() ? $deSuRuta : $publicados->whereNull('ruta_id')->values();
+
+        $programados = $aplican->flatMap(fn ($c) => $c->dias ?? [])->unique()->sort()->values();
+
+        return response()->json([
+            'exito' => true,
+            'data' => [
+                'anio' => $anio,
+                'mes' => $mes,
+                'publicado' => $aplican->isNotEmpty(),
+                'dias_programados' => $programados,
+                'dias_atendidos' => $this->diasAtendidos($user, $anio, $mes),
+                'descripcion' => $aplican->map(fn ($c) => $this->describir($c))->implode(' · '),
+                'notas' => $aplican->pluck('nota')->filter()->values(),
+                'rutas' => $rutasCasa->pluck('nombre'),
+                'sin_casa' => $user->latitud_casa === null,
+            ],
+        ]);
+    }
+
+    /** Días del mes en que algún camión estuvo a 300 m o menos de la casa. */
+    private function diasAtendidos($user, int $anio, int $mes): array
+    {
+        if ($user->latitud_casa === null || $user->longitud_casa === null) {
+            return [];
+        }
+        $lat = (float) $user->latitud_casa;
+        $lng = (float) $user->longitud_casa;
+        $inicio = Carbon::create($anio, $mes, 1)->startOfDay();
+        $fin = $inicio->copy()->endOfMonth();
+        $margen = 0.004; // ~400 m, para no revisar puntos lejanos
+
+        $puntos = Ubicacion::join('jornadas', 'jornadas.id', '=', 'ubicaciones.jornada_id')
+            ->whereBetween('jornadas.fecha', [$inicio->toDateString(), $fin->toDateString()])
+            ->whereBetween('ubicaciones.latitud', [$lat - $margen, $lat + $margen])
+            ->whereBetween('ubicaciones.longitud', [$lng - $margen, $lng + $margen])
+            ->get(['jornadas.fecha', 'ubicaciones.latitud', 'ubicaciones.longitud']);
+
+        return $puntos
+            ->filter(fn ($p) => Geo::distancia($lat, $lng, (float) $p->latitud, (float) $p->longitud) <= self::METROS_PASO_POR_CASA)
+            ->map(fn ($p) => (int) Carbon::parse($p->fecha)->day)
+            ->unique()->sort()->values()->all();
+    }
+
+    private function describir(CalendarioRecoleccion $c): string
+    {
+        $nombres = [1 => 'lunes', 2 => 'martes', 3 => 'miércoles', 4 => 'jueves', 5 => 'viernes', 6 => 'sábados', 7 => 'domingos'];
+        $texto = match ($c->modo) {
+            'pares' => 'Días pares',
+            'impares' => 'Días impares',
+            'dias_semana' => 'Los ' . collect($c->dias_semana ?? [])->map(fn ($d) => $nombres[$d] ?? '')->filter()->join(', ', ' y '),
+            default => 'Días marcados por el municipio',
+        };
+
+        return $c->ruta ? "{$texto} ({$c->ruta->nombre})" : $texto;
+    }
 
     /**
      * Historial de los últimos 7 días calculado con la ubicación de la casa:

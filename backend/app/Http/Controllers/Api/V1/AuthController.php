@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 
 class AuthController extends Controller
 {
@@ -20,11 +21,19 @@ class AuthController extends Controller
 
     public function register(Request $request): JsonResponse
     {
+        // Se limpia antes de validar: correo en minúsculas y sin espacios, teléfono solo con números
+        $request->merge([
+            'name' => trim(preg_replace('/\s+/', ' ', (string) $request->input('name'))),
+            'email' => strtolower(trim((string) $request->input('email'))),
+            'phone' => preg_replace('/\D/', '', (string) $request->input('phone')),
+        ]);
+
+        // Mismas reglas que la app (por si alguien llama a la API directamente)
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'phone' => 'nullable|string|max:20',
-            'password' => 'required|string|min:8',
+            'name' => ['required', 'string', 'min:3', 'max:80', "regex:/^[\\pL' .-]+$/u"],
+            'email' => ['required', 'string', 'max:120', 'email:rfc', 'regex:/^[^@\s]+@[^@\s]+\.[A-Za-z]{2,}$/', 'unique:users,email'],
+            'phone' => ['required', 'digits:10'],
+            'password' => ['required', 'string', Password::min(8)->mixedCase()->numbers()],
             'colonia_id' => 'nullable|integer|exists:colonias,id',
         ]);
 
@@ -39,12 +48,15 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
+        $request->merge(['email' => strtolower(trim((string) $request->input('email')))]);
         $request->validate([
             'email' => 'required|email',
             'password' => 'required|string'
         ]);
 
-        $user = User::where('email', $request->email)->first();
+        // El correo se compara sin importar mayúsculas ni espacios (el teclado del celular los agrega)
+        $email = strtolower(trim((string) $request->email));
+        $user = User::whereRaw('LOWER(email) = ?', [$email])->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([

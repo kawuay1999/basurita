@@ -23,6 +23,20 @@ class BasuritaDemoSeeder extends Seeder
 
     public function run(): void
     {
+        // Se puede correr en cada despliegue: si los datos de prueba ya existen, no duplica nada
+        $admin = DB::table('users')->where('email', 'admin@basurita.gob.mx')->first();
+        if ($admin && $admin->role === 'administrador') {
+            $this->command?->info('Datos de prueba ya cargados; no se vuelven a crear.');
+            return;
+        }
+
+        // Si alguien registró antes uno de los correos de prueba (por ejemplo, el del admin
+        // como ciudadano), se borra para crear la cuenta de prueba correcta
+        DB::table('users')->whereIn('email', [
+            'admin@basurita.gob.mx', 'operador@basurita.gob.mx', 'ciudadano@basurita.gob.mx',
+            'ana.ciudadana@basurita.test', 'jorge.conductor@basurita.test',
+        ])->delete();
+
         DB::transaction(function () {
             $ahora = Carbon::now();
 

@@ -20,6 +20,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => \App\Http\Middleware\CheckRole::class,
         ]);
+
+        // En un hosting (Railway, Render, etc.) la app va detrás de un proxy con HTTPS:
+        // así Laravel reconoce que la petición original era https.
+        $middleware->trustProxies(at: '*');
     })
     ->withExceptions(function (Exceptions $exceptions) {
         // Interceptar errores en rutas API para devolver JSON amigable

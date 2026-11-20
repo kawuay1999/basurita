@@ -18,7 +18,8 @@ class FcmService
 {
     public function configurado(): bool
     {
-        return is_file((string) config('services.fcm.credentials'));
+        return !empty(config('services.fcm.credentials_json'))
+            || is_file((string) config('services.fcm.credentials'));
     }
 
     /** Envía un aviso al celular del usuario. Devuelve true si Firebase lo aceptó. */
@@ -38,8 +39,14 @@ class FcmService
                         'notification' => ['title' => $titulo, 'body' => $mensaje],
                         'data' => array_map('strval', $datos + ['tipo' => 'aviso_camion']),
                         'android' => [
+                            // "high": llega al momento aunque el celular esté en reposo
                             'priority' => 'high',
-                            'notification' => ['sound' => 'default'],
+                            'notification' => [
+                                'sound' => 'default',
+                                'channel_id' => 'avisos_camion', // canal creado por la app
+                                'default_vibrate_timings' => true,
+                                'notification_priority' => 'PRIORITY_HIGH',
+                            ],
                         ],
                     ],
                 ]);
@@ -63,7 +70,13 @@ class FcmService
 
     private function credenciales(): array
     {
-        $json = json_decode((string) file_get_contents(config('services.fcm.credentials')), true);
+        // En un hosting la clave va en la variable FIREBASE_CREDENTIALS_JSON (texto JSON o base64);
+        // en tu PC, en el archivo de storage/app/private/firebase/
+        $crudo = (string) config('services.fcm.credentials_json');
+        if ($crudo !== '' && !str_starts_with(ltrim($crudo), '{')) {
+            $crudo = (string) base64_decode($crudo, true);
+        }
+        $json = json_decode($crudo !== '' ? $crudo : (string) file_get_contents(config('services.fcm.credentials')), true);
         if (!is_array($json) || empty($json['private_key']) || empty($json['client_email']) || empty($json['project_id'])) {
             throw new \RuntimeException('El archivo de cuenta de servicio de Firebase no es válido.');
         }

@@ -23,6 +23,8 @@ use App\Http\Controllers\Api\V1\ReporteHistorialController;
 use App\Http\Controllers\Api\V1\CiudadanoController;
 use App\Http\Controllers\Api\V1\PerfilController;
 use App\Http\Controllers\Api\V1\AvisoVecinosController;
+use App\Http\Controllers\Api\V1\CalendarioAdminController;
+use App\Http\Controllers\Api\V1\UsuarioAdminController;
 
 Route::prefix('v1')->group(function () {
 
@@ -105,6 +107,15 @@ Route::prefix('v1')->group(function () {
             Route::get('/admin/incidencias', [IncidenciaController::class, 'index']);
             Route::put('/admin/incidencias/{incidencia}/estado', [IncidenciaController::class, 'updateEstado']);
             Route::get('/admin/reportes', [ReporteHistorialController::class, 'reporteAdmin']);
+
+            // Usuarios (ciudadanos) y calendario de recolección
+            Route::get('/admin/usuarios', [UsuarioAdminController::class, 'index']);
+            Route::post('/admin/usuarios', [UsuarioAdminController::class, 'store']);
+            Route::put('/admin/usuarios/{usuario}', [UsuarioAdminController::class, 'update']);
+            Route::delete('/admin/usuarios/{usuario}', [UsuarioAdminController::class, 'destroy']);
+            Route::get('/admin/calendarios', [CalendarioAdminController::class, 'index']);
+            Route::post('/admin/calendarios', [CalendarioAdminController::class, 'guardar']);
+            Route::delete('/admin/calendarios/{calendario}', [CalendarioAdminController::class, 'eliminar']);
             // Mapa y Monitoreo en Tiempo Real (Exclusivo Administrador)
             Route::get('/admin/monitoreo/activos', [MapaAdminController::class, 'getUbicaciones']);
         });
@@ -138,6 +149,7 @@ Route::prefix('v1')->group(function () {
             Route::put('/ciudadano/casa', [CiudadanoController::class, 'guardarCasa']);
             Route::get('/ciudadano/camion-cercano', [CiudadanoController::class, 'camionCercano']);
             Route::get('/ciudadano/historial', [CiudadanoController::class, 'historial']);
+            Route::get('/ciudadano/calendario', [CiudadanoController::class, 'calendario']);
 
             Route::get('/ciudadano/notificaciones', [NotificacionController::class, 'index']);
             Route::put('/ciudadano/notificaciones/{id}/leer', [NotificacionController::class, 'marcarLeida']);

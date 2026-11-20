@@ -31,7 +31,7 @@ class SyncController extends Controller
             'incidencias' => 'nullable|array',
             'incidencias.*.client_uuid' => 'required|uuid',
             'incidencias.*.jornada_id' => 'required|exists:jornadas,id',
-            'incidencias.*.tipo' => 'required|in:calle_cerrada,falla_mecanica,accidente',
+            'incidencias.*.tipo' => 'required|in:calle_cerrada,falla_mecanica,accidente,camion_lleno,mal_clima,otro',
             'incidencias.*.descripcion' => 'nullable|string|max:500',
             'incidencias.*.fecha_hora_dispositivo' => 'required|date',
         ]);

@@ -35,10 +35,20 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         router.navigate(['/auth/login']);
       }
       // RNF-23: Nunca propagar excepciones crudas de servidor al usuario
-      const mensajeAmigable =
-        error.error?.mensaje ||
-        error.error?.message ||
-        'No se pudo completar la operación en este momento. Intenta de nuevo.';
+      let mensajeAmigable: string;
+      if (error.status === 0) {
+        // No llegó al servidor: sin internet, servidor apagado o dirección equivocada
+        mensajeAmigable = 'No se pudo conectar con el servidor. Revisa tu conexión a internet e intenta de nuevo.';
+      } else if (error.status >= 500) {
+        mensajeAmigable = 'El servidor tuvo un problema. Intenta de nuevo en unos minutos.';
+      } else if (error.status === 429) {
+        mensajeAmigable = error.error?.mensaje || 'Demasiados intentos. Espera un momento e intenta de nuevo.';
+      } else {
+        mensajeAmigable =
+          error.error?.mensaje ||
+          error.error?.message ||
+          'No se pudo completar la operación en este momento. Intenta de nuevo.';
+      }
 
       return throwError(() => ({
         status: error.status,

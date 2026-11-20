@@ -71,6 +71,19 @@ export class NotificacionPushService {
       }
       if (permiso.receive !== 'granted') return;
 
+      // Canal de Android con prioridad alta: el aviso sale arriba de la pantalla, con sonido
+      // y vibración, aunque la app esté cerrada (como las notificaciones de YouTube o WhatsApp)
+      await PushNotifications.createChannel({
+        id: 'avisos_camion',
+        name: 'Avisos del camión',
+        description: 'Cuando el camión está cerca de tu casa o el conductor manda un aviso',
+        importance: 5,
+        visibility: 1,
+        vibration: true,
+        lights: true,
+        lightColor: '#16A34A'
+      }).catch(() => {});
+
       await PushNotifications.addListener('registration', (t) => {
         this.http.post(`${environment.apiUrl}/v1/fcm-token`, { fcm_token: t.value })
           .pipe(retry({ count: 3, delay: () => timer(2000) }))

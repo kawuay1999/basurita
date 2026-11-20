@@ -145,7 +145,7 @@
   <div *ngIf="hoja" class="absolute inset-0 z-[1800]">
     <div class="absolute inset-0 bg-black/40" (click)="hoja = null" aria-hidden="true"></div>
 
-    <div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-[1.75rem] px-5 pt-3 pb-6 animate-[subir_.2s_ease-out]" role="dialog" aria-modal="true">
+    <div class="absolute bottom-0 left-0 right-0 bg-white rounded-t-[1.75rem] px-5 pt-3 pb-6 max-h-[88vh] overflow-y-auto animate-[subir_.2s_ease-out]" role="dialog" aria-modal="true">
       <div class="w-10 h-1.5 rounded-full bg-gray-300 mx-auto mb-4" aria-hidden="true"></div>
 
       <!-- Avisos a vecinos -->
@@ -174,12 +174,23 @@
       <ng-container *ngIf="hoja === 'reportar'">
         <p class="text-lg font-black text-basurita-text">¿Qué pasó?</p>
         <p class="text-sm text-basurita-muted mb-4">El administrador lo verá al momento.</p>
-        <div class="grid grid-cols-3 gap-3">
-          <button *ngFor="let inc of incidencias" (click)="reportar(inc.id, inc.nombre)" [ngClass]="inc.color"
-                  class="h-24 rounded-softer text-white font-bold text-sm flex items-center justify-center text-center p-2 active:scale-95 transition">
-            {{ inc.nombre }}
-          </button>
-        </div>
+        <ul class="divide-y divide-gray-100 -mx-1">
+          <li *ngFor="let inc of incidencias">
+            <button (click)="reportar(inc.id, inc.nombre)"
+                    class="w-full flex items-center gap-4 px-1 py-3 text-left rounded-soft active:bg-gray-50 transition">
+              <span class="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0" [ngClass]="inc.fondo">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="inc.icono"/>
+                </svg>
+              </span>
+              <span class="flex-1 min-w-0">
+                <span class="block font-bold text-basurita-text">{{ inc.nombre }}</span>
+                <span class="block text-xs text-basurita-muted">{{ inc.detalle }}</span>
+              </span>
+              <svg class="w-5 h-5 text-gray-300 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
+            </button>
+          </li>
+        </ul>
       </ng-container>
 
       <!-- Confirmar terminar ruta -->

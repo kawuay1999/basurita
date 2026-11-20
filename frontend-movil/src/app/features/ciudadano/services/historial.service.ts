@@ -15,4 +15,9 @@ export class HistorialService {
   obtenerHistorial(): Observable<any> {
     return this.http.get(`${this.apiUrl}/historial`);
   }
+
+  /** Días de recolección del mes publicados por el admin + días en que sí pasó el camión. */
+  obtenerCalendario(anio: number, mes: number): Observable<any> {
+    return this.http.get(`${this.apiUrl}/calendario`, { params: { anio, mes } });
+  }
 }

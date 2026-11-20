@@ -32,6 +32,8 @@ return [
     // Archivo JSON de "Cuentas de servicio" de Firebase. NO se sube a git.
     'fcm' => [
         'credentials' => env('FIREBASE_CREDENTIALS', storage_path('app/private/firebase/service-account.json')),
+        // Alternativa para hostings: el contenido del JSON (o en base64) en una variable de entorno
+        'credentials_json' => env('FIREBASE_CREDENTIALS_JSON'),
     ],
 
     'slack' => [

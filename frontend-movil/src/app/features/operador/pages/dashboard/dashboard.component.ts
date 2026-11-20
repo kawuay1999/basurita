@@ -68,10 +68,38 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     { tipo: 'no_pasara', titulo: 'Hoy no podré pasar', detalle: 'A todos los vecinos de la ruta', icono: 'alto' }
   ];
 
+  // Reportes rápidos: ícono (trazo SVG) + color suave de fondo
   readonly incidencias = [
-    { id: 'calle_cerrada', nombre: 'Calle cerrada', color: 'bg-amber-600' },
-    { id: 'falla_mecanica', nombre: 'Falla mecánica', color: 'bg-red-700' },
-    { id: 'accidente', nombre: 'Accidente', color: 'bg-purple-800' }
+    {
+      id: 'calle_cerrada', nombre: 'Calle cerrada', detalle: 'Obra, bloqueo o no se puede pasar',
+      fondo: 'bg-amber-50 text-amber-700',
+      icono: 'M18.364 18.364A9 9 0 0 0 5.636 5.636m12.728 12.728A9 9 0 0 1 5.636 5.636m12.728 12.728L5.636 5.636'
+    },
+    {
+      id: 'falla_mecanica', nombre: 'Falla mecánica', detalle: 'El camión tiene un problema',
+      fondo: 'bg-red-50 text-red-700',
+      icono: 'M21.75 6.75a4.5 4.5 0 0 1-4.884 4.484c-1.076-.091-2.264.071-2.95.904l-7.152 8.684a2.548 2.548 0 1 1-3.586-3.586l8.684-7.152c.833-.686.995-1.874.904-2.95a4.5 4.5 0 0 1 6.336-4.486l-3.276 3.276a3.004 3.004 0 0 0 2.25 2.25l3.276-3.276c.256.565.398 1.192.398 1.852Z'
+    },
+    {
+      id: 'accidente', nombre: 'Accidente', detalle: 'Choque o persona lesionada',
+      fondo: 'bg-rose-50 text-rose-700',
+      icono: 'M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z'
+    },
+    {
+      id: 'camion_lleno', nombre: 'Camión lleno', detalle: 'Ya no cabe más basura',
+      fondo: 'bg-sky-50 text-sky-700',
+      icono: 'm20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z'
+    },
+    {
+      id: 'mal_clima', nombre: 'Mal clima', detalle: 'Lluvia fuerte o inundación',
+      fondo: 'bg-indigo-50 text-indigo-700',
+      icono: 'M2.25 15a4.5 4.5 0 0 0 4.5 4.5H18a3.75 3.75 0 0 0 1.332-7.257 3 3 0 0 0-3.758-3.848 5.25 5.25 0 0 0-10.233 2.33A4.502 4.502 0 0 0 2.25 15Z'
+    },
+    {
+      id: 'otro', nombre: 'Otro problema', detalle: 'Algo distinto a lo anterior',
+      fondo: 'bg-gray-100 text-gray-600',
+      icono: 'M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.969 5.969 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z'
+    }
   ];
 
   private map?: L.Map;

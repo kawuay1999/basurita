@@ -7,8 +7,8 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "apk": "ng build --configuration apk && npx cap sync android && cd android && .\\gradlew.bat assembleDebug",
-    "android": "ng build --configuration apk && npx cap sync android && npx cap open android"
+    "apk": "node scripts/ip-apk.mjs && ng build --configuration apk && npx cap sync android && cd android && .\\gradlew.bat assembleDebug",
+    "android": "node scripts/ip-apk.mjs && ng build --configuration apk && npx cap sync android && npx cap open android"
   },
   "private": true,
   "packageManager": "npm@11.21.1",

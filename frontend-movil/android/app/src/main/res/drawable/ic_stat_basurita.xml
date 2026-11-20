@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ícono pequeño de la barra de notificaciones (Android lo pinta de un solo color) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M2,5h12v10h-1.18A3,3 0,0 0,7.18 15H4V15H2V5zM15,8h3.5l3.5,4.5V15h-1.18a3,3 0,0 0,-5.64 0H15V8zM7.5,15.5a2,2 0,1 1,0 4a2,2 0,1 1,0 -4zM18,15.5a2,2 0,1 1,0 4a2,2 0,1 1,0 -4z"/>
+</vector>

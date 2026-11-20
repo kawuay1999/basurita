@@ -1,100 +1,173 @@
-<div class="min-h-screen bg-basurita-bg flex flex-col p-6">
-  <!-- Encabezado con regreso al Mapa (RNF-20) -->
-  <header class="flex items-center gap-4 mb-6">
-    <a routerLink="/ciudadano/mapa" 
-       aria-label="Volver al mapa"
+<div class="min-h-screen bg-basurita-bg flex flex-col p-5 pb-10">
+  <!-- Encabezado -->
+  <header class="flex items-center gap-4 mb-5">
+    <a routerLink="/ciudadano/mapa" aria-label="Volver al mapa"
        class="w-11 h-11 bg-white rounded-full shadow-soft flex items-center justify-center text-basurita-text hover:bg-gray-50 transition">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
       </svg>
     </a>
     <div>
-      <h1 class="text-2xl font-bold text-basurita-text">Historial de Recolección</h1>
-      <p class="text-sm text-basurita-muted">Cuándo pasó el camión por tu calle</p>
+      <h1 class="text-2xl font-bold text-basurita-text leading-tight">Recolección</h1>
+      <p class="text-sm text-basurita-muted">Cuándo pasa el camión por tu calle</p>
     </div>
   </header>
 
-  <!-- Cargando -->
-  <div *ngIf="isLoading" class="flex-1 flex items-center justify-center">
-    <svg class="animate-spin h-8 w-8 text-basurita-primary" fill="none" viewBox="0 0 24 24">
-      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-    </svg>
+  <!-- Pestañas -->
+  <div class="bg-white rounded-full p-1 shadow-soft grid grid-cols-2 mb-5" role="tablist">
+    <button role="tab" [attr.aria-selected]="pestana === 'calendario'" (click)="pestana = 'calendario'"
+            class="py-2.5 rounded-full text-sm font-bold transition"
+            [ngClass]="pestana === 'calendario' ? 'bg-basurita-primary text-white shadow' : 'text-basurita-muted'">
+      Calendario
+    </button>
+    <button role="tab" [attr.aria-selected]="pestana === 'historial'" (click)="pestana = 'historial'"
+            class="py-2.5 rounded-full text-sm font-bold transition"
+            [ngClass]="pestana === 'historial' ? 'bg-basurita-primary text-white shadow' : 'text-basurita-muted'">
+      Historial
+    </button>
   </div>
 
-  <!-- Error Amigable (RNF-23) -->
-  <div *ngIf="!isLoading && errorMensaje" class="bg-red-50 border border-red-100 p-5 rounded-softer text-basurita-danger-dark text-sm font-medium">
-    {{ errorMensaje }}
-  </div>
+  <!-- ===================== CALENDARIO ===================== -->
+  <section *ngIf="pestana === 'calendario'" class="space-y-4">
 
-  <!-- Contenido Real -->
-  <div *ngIf="!isLoading && historial" class="space-y-6">
-    
-    <!-- Tarjetas Resumen: Hoy y Ayer -->
-    <div class="grid grid-cols-1 gap-4">
-      <!-- HOY -->
-      <div class="bg-white p-5 rounded-softer shadow-soft border border-gray-100 flex items-center gap-4">
-        <div [ngClass]="historial.hoy.atendida ? 'bg-green-50 text-basurita-secondary' : 'bg-blue-50 text-basurita-primary'" 
-             class="p-4 rounded-soft shrink-0">
-          <svg *ngIf="historial.hoy.atendida" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-          </svg>
-          <svg *ngIf="!historial.hoy.atendida" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
-          </svg>
-        </div>
-        <div class="flex-1">
-          <span class="text-xs font-bold uppercase tracking-wider text-basurita-muted">Hoy</span>
-          <h2 class="text-base font-bold text-basurita-text mt-0.5">{{ historial.hoy.descripcion }}</h2>
-          <p *ngIf="historial.hoy.hora" class="text-xs text-basurita-muted mt-1">
-            Unidad {{ historial.hoy.unidad }} • Actualizado a las {{ historial.hoy.hora }}
-          </p>
-        </div>
+    <!-- Próxima recolección -->
+    <div *ngIf="proximo" class="bg-basurita-primary text-white rounded-softer p-5 shadow-soft flex items-center gap-4">
+      <div class="w-14 h-14 rounded-soft bg-white/15 flex flex-col items-center justify-center shrink-0">
+        <span class="text-[11px] font-bold uppercase leading-none">{{ proximo.mesCorto }}</span>
+        <span class="text-2xl font-black leading-none mt-0.5">{{ proximo.dia }}</span>
       </div>
-
-      <!-- AYER -->
-      <div class="bg-white p-5 rounded-softer shadow-soft border border-gray-100 flex items-center gap-4">
-        <div [ngClass]="historial.ayer.atendida ? 'bg-green-50 text-basurita-secondary' : 'bg-gray-100 text-gray-500'" 
-             class="p-4 rounded-soft shrink-0">
-          <svg *ngIf="historial.ayer.atendida" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-          </svg>
-          <svg *ngIf="!historial.ayer.atendida" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4"/>
-          </svg>
-        </div>
-        <div class="flex-1">
-          <span class="text-xs font-bold uppercase tracking-wider text-basurita-muted">Ayer</span>
-          <h2 class="text-base font-bold text-basurita-text mt-0.5">{{ historial.ayer.descripcion }}</h2>
-          <p *ngIf="historial.ayer.hora" class="text-xs text-basurita-muted mt-1">
-            Unidad {{ historial.ayer.unidad }} • {{ historial.ayer.hora }}
-          </p>
-        </div>
+      <div class="min-w-0">
+        <p class="text-xs font-bold uppercase tracking-wider text-green-100">Próxima recolección</p>
+        <p class="text-lg font-black leading-tight">{{ proximo.texto }}</p>
+        <p class="text-xs text-green-50 mt-0.5">Saca tu basura antes de que pase el camión</p>
       </div>
     </div>
 
-    <!-- Esta Semana -->
-    <div>
-      <h3 class="text-sm font-bold uppercase tracking-wider text-basurita-muted mb-3 px-1">Últimos 7 días</h3>
-      
-      <div *ngIf="historial.semana.length === 0" class="bg-white p-6 rounded-softer text-center text-sm text-basurita-muted shadow-soft">
-        No hay recorridos por tu calle en los últimos 7 días.
+    <!-- Calendario del mes -->
+    <div class="bg-white rounded-softer shadow-soft p-4">
+      <div class="flex items-center justify-between mb-3">
+        <button (click)="cambiarMes(-1)" aria-label="Mes anterior"
+                class="w-10 h-10 rounded-full flex items-center justify-center text-basurita-text active:bg-gray-100">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5"/></svg>
+        </button>
+        <h2 class="text-lg font-black text-basurita-text capitalize">{{ nombreMes }} {{ anio }}</h2>
+        <button (click)="cambiarMes(1)" aria-label="Mes siguiente"
+                class="w-10 h-10 rounded-full flex items-center justify-center text-basurita-text active:bg-gray-100">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/></svg>
+        </button>
       </div>
 
-      <div class="space-y-3">
-        <div *ngFor="let item of historial.semana" 
-             class="bg-white p-4 rounded-soft shadow-soft border border-gray-100 flex items-center justify-between">
-          <div>
-            <p class="font-bold text-basurita-text text-sm">{{ item.dia_semana }} ({{ item.fecha }})</p>
-            <p class="text-xs text-basurita-muted mt-0.5">{{ item.ruta }} • {{ item.unidad }}</p>
+      <div class="grid grid-cols-7 text-center mb-1">
+        <span *ngFor="let d of diasSemana" class="text-[11px] font-bold uppercase text-basurita-muted py-1">{{ d }}</span>
+      </div>
+
+      <div class="grid grid-cols-7 gap-y-1.5 relative" [class.opacity-50]="cargandoCalendario">
+        <div *ngFor="let c of celdas" class="flex items-center justify-center">
+          <div *ngIf="c.dia" class="relative w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition"
+               [ngClass]="claseDia(c)" [attr.aria-label]="etiquetaDia(c)">
+            {{ c.dia }}
+            <!-- Palomita: el camión sí pasó -->
+            <span *ngIf="c.atendido" class="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-white flex items-center justify-center shadow">
+              <svg class="w-3 h-3 text-basurita-primary-dark" fill="none" stroke="currentColor" stroke-width="3.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
+            </span>
           </div>
-          <span [ngClass]="item.atendida ? 'bg-green-100 text-green-800' : (item.estado === 'no_paso' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800')"
-                class="px-3 py-1 rounded-full text-xs font-bold">
-            {{ item.atendida ? 'Pasó ' + (item.hora_actualizacion || '') : (item.estado === 'en_curso' ? 'En camino' : (item.estado === 'no_paso' ? 'No pasó' : 'Programada')) }}
-          </span>
         </div>
+      </div>
+
+      <!-- Leyenda -->
+      <div class="mt-4 pt-3 border-t border-gray-100 grid grid-cols-2 gap-2 text-xs text-basurita-text">
+        <span class="flex items-center gap-2"><span class="w-4 h-4 rounded-full bg-basurita-primary"></span> Pasa el camión</span>
+        <span class="flex items-center gap-2"><span class="w-4 h-4 rounded-full bg-green-100 relative"><svg class="w-3 h-3 absolute -bottom-0.5 -right-1 text-basurita-primary-dark" fill="none" stroke="currentColor" stroke-width="3.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg></span> Ya pasó</span>
+        <span class="flex items-center gap-2"><span class="w-4 h-4 rounded-full ring-2 ring-basurita-secondary"></span> Hoy</span>
+        <span class="flex items-center gap-2"><span class="w-4 h-4 rounded-full bg-gray-100"></span> Sin recolección</span>
       </div>
     </div>
 
-  </div>
+    <!-- Lo que publicó el municipio -->
+    <div *ngIf="calendario?.publicado" class="bg-white rounded-softer shadow-soft p-5 flex gap-4">
+      <div class="w-11 h-11 rounded-full bg-green-50 text-basurita-primary flex items-center justify-center shrink-0">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.34 15.84c-.688-.06-1.386-.09-2.09-.09H7.5a4.5 4.5 0 1 1 0-9h.75c.704 0 1.402-.03 2.09-.09m0 9.18c.253.962.584 1.892.985 2.783.247.55.06 1.21-.463 1.511l-.657.38c-.551.318-1.26.117-1.527-.461a20.845 20.845 0 0 1-1.44-4.282m3.102.069a18.03 18.03 0 0 1-.59-4.59c0-1.586.205-3.124.59-4.59m0 9.18a23.848 23.848 0 0 1 8.835 2.535M10.34 6.66a23.847 23.847 0 0 0 8.835-2.535m0 0A23.74 23.74 0 0 0 18.795 3m.38 1.125a23.91 23.91 0 0 1 1.014 5.395m-1.014 8.855c-.118.38-.245.754-.38 1.125m.38-1.125a23.91 23.91 0 0 0 1.014-5.395m0-3.46c.495.413.811 1.035.811 1.73 0 .695-.316 1.317-.811 1.73m0-3.46a24.347 24.347 0 0 1 0 3.46"/></svg>
+      </div>
+      <div class="min-w-0">
+        <p class="text-xs font-bold uppercase tracking-wider text-basurita-muted">Aviso del municipio</p>
+        <p class="font-bold text-basurita-text">{{ calendario.descripcion }}</p>
+        <p *ngFor="let n of calendario.notas" class="text-sm text-basurita-muted mt-1">{{ n }}</p>
+        <p class="text-xs text-basurita-muted mt-2">{{ calendario.dias_programados.length }} días de recolección este mes</p>
+      </div>
+    </div>
+
+    <div *ngIf="calendario && !calendario.publicado && !cargandoCalendario"
+         class="bg-amber-50 border border-amber-200 rounded-softer p-5 text-sm text-amber-900">
+      <p class="font-bold">Aún no hay calendario para este mes</p>
+      <p class="mt-1">El municipio todavía no publica los días de recolección de {{ nombreMes }}. Te avisaremos cuando lo haga.</p>
+    </div>
+
+    <div *ngIf="errorCalendario" class="bg-red-50 border border-red-100 p-4 rounded-softer text-basurita-danger-dark text-sm font-medium">
+      {{ errorCalendario }}
+    </div>
+  </section>
+
+  <!-- ===================== HISTORIAL ===================== -->
+  <section *ngIf="pestana === 'historial'">
+    <div *ngIf="isLoading" class="py-16 flex items-center justify-center">
+      <svg class="animate-spin h-8 w-8 text-basurita-primary" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+    </div>
+
+    <div *ngIf="!isLoading && errorMensaje" class="bg-red-50 border border-red-100 p-5 rounded-softer text-basurita-danger-dark text-sm font-medium">
+      {{ errorMensaje }}
+    </div>
+
+    <div *ngIf="!isLoading && historial" class="space-y-6">
+      <div class="grid grid-cols-1 gap-4">
+        <!-- HOY -->
+        <div class="bg-white p-5 rounded-softer shadow-soft border border-gray-100 flex items-center gap-4">
+          <div [ngClass]="historial.hoy.atendida ? 'bg-green-50 text-basurita-primary' : 'bg-blue-50 text-basurita-secondary'" class="p-4 rounded-soft shrink-0">
+            <svg *ngIf="historial.hoy.atendida" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            <svg *ngIf="!historial.hoy.atendida" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          </div>
+          <div class="flex-1">
+            <span class="text-xs font-bold uppercase tracking-wider text-basurita-muted">Hoy</span>
+            <h2 class="text-base font-bold text-basurita-text mt-0.5">{{ historial.hoy.descripcion }}</h2>
+            <p *ngIf="historial.hoy.hora" class="text-xs text-basurita-muted mt-1">Unidad {{ historial.hoy.unidad }} • {{ historial.hoy.hora }}</p>
+          </div>
+        </div>
+
+        <!-- AYER -->
+        <div class="bg-white p-5 rounded-softer shadow-soft border border-gray-100 flex items-center gap-4">
+          <div [ngClass]="historial.ayer.atendida ? 'bg-green-50 text-basurita-primary' : 'bg-gray-100 text-gray-500'" class="p-4 rounded-soft shrink-0">
+            <svg *ngIf="historial.ayer.atendida" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+            <svg *ngIf="!historial.ayer.atendida" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4"/></svg>
+          </div>
+          <div class="flex-1">
+            <span class="text-xs font-bold uppercase tracking-wider text-basurita-muted">Ayer</span>
+            <h2 class="text-base font-bold text-basurita-text mt-0.5">{{ historial.ayer.descripcion }}</h2>
+            <p *ngIf="historial.ayer.hora" class="text-xs text-basurita-muted mt-1">Unidad {{ historial.ayer.unidad }} • {{ historial.ayer.hora }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Últimos 7 días -->
+      <div>
+        <h3 class="text-sm font-bold uppercase tracking-wider text-basurita-muted mb-3 px-1">Últimos 7 días</h3>
+        <div *ngIf="historial.semana.length === 0" class="bg-white p-6 rounded-softer text-center text-sm text-basurita-muted shadow-soft">
+          No hay recorridos por tu calle en los últimos 7 días.
+        </div>
+        <div class="space-y-3">
+          <div *ngFor="let item of historial.semana" class="bg-white p-4 rounded-soft shadow-soft border border-gray-100 flex items-center justify-between">
+            <div>
+              <p class="font-bold text-basurita-text text-sm">{{ item.dia_semana }} ({{ item.fecha }})</p>
+              <p class="text-xs text-basurita-muted mt-0.5">{{ item.ruta }} • {{ item.unidad }}</p>
+            </div>
+            <span [ngClass]="item.atendida ? 'bg-green-100 text-green-800' : (item.estado === 'no_paso' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800')"
+                  class="px-3 py-1 rounded-full text-xs font-bold">
+              {{ item.atendida ? 'Pasó ' + (item.hora_actualizacion || '') : (item.estado === 'en_curso' ? 'En camino' : (item.estado === 'no_paso' ? 'No pasó' : 'Programada')) }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 </div>

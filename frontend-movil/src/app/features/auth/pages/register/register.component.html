@@ -11,32 +11,61 @@
 
   <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
     <div class="bg-basurita-surface py-8 px-6 shadow-soft rounded-softer sm:px-10 border border-gray-100">
-      
-      <div *ngIf="errorMessage" class="mb-4 bg-red-50 p-4 rounded-soft flex items-center gap-3">
-        <svg class="w-5 h-5 text-basurita-danger" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+
+      <div *ngIf="errorMessage" role="alert" class="mb-4 bg-red-50 p-4 rounded-soft flex items-center gap-3">
+        <svg class="w-5 h-5 text-basurita-danger shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
         <p class="text-sm text-basurita-danger-dark font-medium">{{ errorMessage }}</p>
       </div>
 
-      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-5">
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-5" novalidate>
+        <!-- Nombre -->
         <div>
           <label for="name" class="block text-sm font-medium text-basurita-text">Nombre completo</label>
-          <input id="name" type="text" formControlName="name" class="input-base mt-1" placeholder="Juan Pérez">
+          <input id="name" type="text" formControlName="name" class="input-base mt-1" placeholder="Juan Pérez"
+                 autocomplete="name" autocapitalize="words" maxlength="80"
+                 [class.!border-basurita-danger]="mostrarError('name')"
+                 [attr.aria-invalid]="mostrarError('name')" aria-describedby="error-name">
+          <p *ngIf="mostrarError('name')" id="error-name" class="mt-1.5 text-sm text-basurita-danger font-medium">{{ error('name') }}</p>
         </div>
 
+        <!-- Correo -->
         <div>
           <label for="email" class="block text-sm font-medium text-basurita-text">Correo electrónico</label>
-          <input id="email" type="email" formControlName="email" class="input-base mt-1" placeholder="juan@correo.com">
+          <input id="email" type="email" formControlName="email" class="input-base mt-1" placeholder="juan@gmail.com"
+                 autocomplete="email" autocapitalize="none" autocorrect="off" inputmode="email" maxlength="120"
+                 [class.!border-basurita-danger]="mostrarError('email')"
+                 [attr.aria-invalid]="mostrarError('email')" aria-describedby="error-email">
+          <p *ngIf="mostrarError('email')" id="error-email" class="mt-1.5 text-sm text-basurita-danger font-medium">{{ error('email') }}</p>
+          <button *ngIf="sugerenciaCorreo" type="button" (click)="usarSugerencia()"
+                  class="mt-1.5 text-sm text-basurita-primary-dark font-semibold underline">
+            ¿Quisiste decir {{ sugerenciaCorreo }}?
+          </button>
         </div>
 
+        <!-- Teléfono -->
         <div>
           <label for="phone" class="block text-sm font-medium text-basurita-text">Teléfono (10 dígitos)</label>
-          <input id="phone" type="tel" formControlName="phone" class="input-base mt-1" placeholder="5512345678">
+          <input id="phone" type="tel" formControlName="phone" class="input-base mt-1" placeholder="5512345678"
+                 inputmode="numeric" autocomplete="tel-national" maxlength="10" (input)="limpiarTelefono($event)"
+                 [class.!border-basurita-danger]="mostrarError('phone')"
+                 [attr.aria-invalid]="mostrarError('phone')" aria-describedby="error-phone">
+          <div class="mt-1.5 flex items-start justify-between gap-2">
+            <p *ngIf="mostrarError('phone')" id="error-phone" class="text-sm text-basurita-danger font-medium">{{ error('phone') }}</p>
+            <span class="ml-auto text-xs font-semibold tabular-nums"
+                  [ngClass]="(registerForm.value.phone?.length || 0) === 10 ? 'text-basurita-primary' : 'text-basurita-muted'">
+              {{ registerForm.value.phone?.length || 0 }}/10
+            </span>
+          </div>
         </div>
 
+        <!-- Contraseña -->
         <div>
           <label for="password" class="block text-sm font-medium text-basurita-text">Contraseña</label>
           <div class="mt-1 relative">
-            <input id="password" [type]="showPassword ? 'text' : 'password'" formControlName="password" class="input-base pr-12" placeholder="Mínimo 8 caracteres">
+            <input id="password" [type]="showPassword ? 'text' : 'password'" formControlName="password" class="input-base pr-12"
+                   placeholder="Ej. Basurita2026" autocomplete="new-password" autocapitalize="none"
+                   [class.!border-basurita-danger]="mostrarError('password')"
+                   [attr.aria-invalid]="mostrarError('password')" aria-describedby="requisitos-password">
             <button type="button" (click)="showPassword = !showPassword"
                     class="absolute inset-y-0 right-0 flex items-center px-3 text-basurita-muted hover:text-basurita-text"
                     [attr.aria-label]="showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'">
@@ -44,6 +73,17 @@
               <svg *ngIf="showPassword" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.22A10.48 10.48 0 0 0 2.04 12c1.38 4.16 5.32 7.5 9.96 7.5 1.9 0 3.68-.5 5.22-1.38M6.23 6.23A10.45 10.45 0 0 1 12 4.5c4.64 0 8.57 3 9.96 7.18a10.5 10.5 0 0 1-4.19 5.55M6.23 6.23 3 3m3.23 3.23 3.65 3.65m7.89 7.89L21 21m-3.23-3.23-3.65-3.65m0 0a3 3 0 1 0-4.24-4.24m4.24 4.24L9.88 9.88"/></svg>
             </button>
           </div>
+
+          <!-- Requisitos: se ponen en verde conforme se cumplen -->
+          <ul id="requisitos-password" class="mt-2 grid grid-cols-2 gap-x-3 gap-y-1">
+            <li *ngFor="let r of requisitos" class="flex items-center gap-1.5 text-xs font-medium"
+                [ngClass]="r.ok ? 'text-basurita-primary' : (intentoEnviar ? 'text-basurita-danger' : 'text-basurita-muted')">
+              <svg *ngIf="r.ok" class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
+              <svg *ngIf="!r.ok" class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></svg>
+              {{ r.texto }}
+            </li>
+          </ul>
+          <p *ngIf="mostrarError('password')" class="mt-1.5 text-sm text-basurita-danger font-medium">{{ error('password') }}</p>
         </div>
 
         <div class="pt-2">
@@ -55,7 +95,7 @@
 
       <div class="mt-6 text-center">
         <p class="text-sm text-basurita-muted">
-          ¿Ya tienes cuenta? 
+          ¿Ya tienes cuenta?
           <a routerLink="/auth/login" class="font-semibold text-basurita-primary hover:text-basurita-primary-dark transition-colors">Inicia sesión</a>
         </p>
       </div>

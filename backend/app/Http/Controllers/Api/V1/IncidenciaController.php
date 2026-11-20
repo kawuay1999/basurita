@@ -86,7 +86,7 @@ class IncidenciaController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'tipo' => 'required|in:calle_cerrada,falla_mecanica,accidente',
+            'tipo' => 'required|in:calle_cerrada,falla_mecanica,accidente,camion_lleno,mal_clima,otro',
             'descripcion' => 'nullable|string|max:500',
             'foto' => 'nullable|image|max:5120', // Opcional, máx 5MB
             'jornada_id' => 'nullable|exists:jornadas,id'

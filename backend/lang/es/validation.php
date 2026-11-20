@@ -28,6 +28,15 @@ return [
         'array' => ':Attribute debe tener al menos :min elementos.',
     ],
     'numeric' => ':Attribute debe ser un número.',
+    'digits' => ':Attribute debe tener exactamente :digits dígitos.',
+    'regex' => ':Attribute no tiene un formato válido.',
+    'password' => [
+        'letters' => ':Attribute debe tener al menos una letra.',
+        'mixed' => ':Attribute debe tener al menos una mayúscula y una minúscula.',
+        'numbers' => ':Attribute debe tener al menos un número.',
+        'symbols' => ':Attribute debe tener al menos un símbolo.',
+        'uncompromised' => 'Esa :attribute apareció en una filtración de datos. Elige otra.',
+    ],
     'required' => ':Attribute es obligatorio.',
     'size' => [
         'array' => ':Attribute debe tener :size elementos.',

@@ -20,8 +20,6 @@
 
 # Generated Laravel files and local runtime data
 /backend/bootstrap/cache/*.php
-/backend/storage/framework/
-/backend/storage/logs/
 /backend/database/*.sqlite
 /backend/database/*.sqlite-*
 *.sqlite

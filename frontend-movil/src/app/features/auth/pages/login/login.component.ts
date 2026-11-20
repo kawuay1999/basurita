@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { ButtonComponent } from '../../../../shared/components/button/button.component';
+import { mensajeDeError } from '../../utils/mensaje-error';
 
 @Component({
   selector: 'app-login',
@@ -23,28 +24,40 @@ export class LoginComponent {
     private router: Router
   ) {
     this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]]
+      // El formato lo revisa el servidor: aquí se aceptan espacios o mayúsculas y se limpian al enviar
+      email: ['', [Validators.required]],
+      password: ['', [Validators.required]]
     });
   }
 
   onSubmit() {
-    if (this.loginForm.invalid) return;
+    if (this.loginForm.invalid) {
+      this.errorMessage = 'Escribe tu correo y tu contraseña.';
+      return;
+    }
 
     this.isLoading = true;
     this.errorMessage = '';
 
-    this.authService.login(this.loginForm.value).subscribe({
+    // El teclado del celular suele poner mayúscula al inicio o un espacio al final
+    const credenciales = {
+      email: (this.loginForm.value.email || '').trim().toLowerCase(),
+      password: this.loginForm.value.password
+    };
+
+    this.authService.login(credenciales).subscribe({
       next: (res: any) => {
         // Usamos tus métodos personalizados
         this.authService.saveSession(res.token, res.user);
         // Primero el permiso de ubicación; esa pantalla manda a cada rol a su inicio
         this.router.navigate(['/permiso-ubicacion']);
       },
-      error: () => {
+      error: (err: any) => {
         this.isLoading = false;
-        // RNF-23: Error amigable
-        this.errorMessage = 'Correo o contraseña incorrectos. Por favor, intenta de nuevo.';
+        // "Contraseña incorrecta" solo cuando el servidor lo dice; si no hay conexión, se avisa eso
+        this.errorMessage = err?.status === 401
+          ? 'Correo o contraseña incorrectos. Por favor, intenta de nuevo.'
+          : mensajeDeError(err, 'No se pudo iniciar sesión. Intenta de nuevo.');
       }
     });
   }
